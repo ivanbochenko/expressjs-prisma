@@ -5,7 +5,7 @@ import { Request, Response, NextFunction } from 'express';
 const auth = (req: Request, res: Response, next: NextFunction) => {
   try {
     const { token } = req.body
-    jwt.verify(token, process.env.JWT_SECRET)
+    jwt.verify(token, JSON.stringify(process.env.JWT_SECRET))
     next()
   } catch {
     res.status(401).json({ message: 'Token error' })
