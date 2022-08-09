@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import express from "express";
+import auth from './auth';
 
 const prisma = new PrismaClient();
 
@@ -18,7 +19,7 @@ app.get("/todos", async (req, res) => {
   res.json(todos);
 });
 
-app.post("/todos", async (req, res) => {
+app.post("/todos", auth, async (req, res) => {
   const todo = await prisma.todo.create({
     data: {
       completed: false,
