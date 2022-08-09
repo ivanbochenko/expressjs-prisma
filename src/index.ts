@@ -31,7 +31,7 @@ app.post("/todos", auth, async (req, res) => {
   return res.json(todo);
 });
 
-app.get("/todos/:id", async (req, res) => {
+app.get("/todos/:id", auth, async (req, res) => {
   const id = req.params.id;
   const todo = await prisma.todo.findUnique({
     where: { id },
