@@ -29,6 +29,7 @@ model Event {
   id          String @id @default(uuid())
   author      User @relation(fields: [author_id], references: [id])
   author_id   String
+  photo       String?
   title       String
   text        String?
   slots       Int

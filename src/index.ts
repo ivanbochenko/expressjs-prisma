@@ -53,13 +53,14 @@ app.get("/events", auth, async (req, res) => {
 
 app.post('/event', auth, async (req, res) => {
   try {
-    const { author_id, title, text, slots, time, location } = req.body
+    const { author_id, title, text, slots, photo, time, location } = req.body
     const event = await prisma.event.create({
       data: {
         author_id,
         title,
         text,
         slots,
+        photo,
         time,
         latitude: location.latitude,
         longitude: location.longitude,
