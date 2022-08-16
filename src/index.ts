@@ -31,7 +31,7 @@ app.get("/users/:id", auth, async (req, res) => {
 });
 
 app.get("/events", auth, async (req, res) => {
-  const events = await prisma.event.findMany();
+  const events = await prisma.event.findMany()
   return res.json(events);
 });
 
