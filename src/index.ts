@@ -48,19 +48,25 @@ app.get("/events", auth, async (req, res) => {
 });
 
 app.post('/event', auth, async (req, res) => {
-  const { author_id, title, text, slots, location } = req.body
-  const event = await prisma.event.create({
-    data: {
-      author_id,
-      title,
-      text,
-      slots,
-      // time,
-      latitude: location.latitude,
-      longitude: location.longitude,
-    }
-  })
-  return res.json(event)
+  try {
+    
+    const { author_id, title, text, slots, location } = req.body
+    const event = await prisma.event.create({
+      data: {
+        author_id,
+        title,
+        text,
+        slots,
+        // time,
+        latitude: location.latitude,
+        longitude: location.longitude,
+      }
+    })
+    return res.json(event)
+  } catch (error) {
+    console.log(error);
+    
+  }
 })
 
 app.listen(port, () => {
