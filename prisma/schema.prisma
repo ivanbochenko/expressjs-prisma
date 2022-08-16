@@ -10,9 +10,50 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model Todo {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  text      String
-  completed Boolean
+model User {
+  id          String    @id @default(uuid())
+  created_at  DateTime  @default(now())
+  email       String?   @unique
+  phone       String?   @unique
+  name        String?
+  bio         String?
+  avatar      String?
+  age         Int?
+  events      Event[]
+  matches     Match[]
+  messages    Message[]
+}
+
+model Event {
+  id          String @id @default(uuid())
+  author      User @relation(fields: [author_id], references: [id])
+  author_id   String
+  title       String
+  text        String?
+  slots       Int
+  date        DateTime @default(now()) @db.Date
+  time        DateTime @default(now()) @db.Time(0)
+  latitude    Float
+  longitude   Float
+  messages    Message[]
+  matches     Match[]
+}
+
+model Message {
+  id          String @id @default(uuid())
+  text        String
+  time        DateTime @default(now())
+  author      User @relation(fields: [author_id], references: [id])
+  author_id   String
+  event       Event @relation(fields: [event_id], references: [id])
+  event_id    String
+}
+
+model Match {
+  id          String @id @default(uuid())
+  author      User @relation(fields: [author_id], references: [id])
+  author_id   String
+  event       Event @relation(fields: [event_id], references: [id])
+  event_id    String
+  accepted    Boolean
 }

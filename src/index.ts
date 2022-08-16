@@ -1,8 +1,14 @@
-import { PrismaClient } from "@prisma/client";
 import express from "express";
+import { PrismaClient } from "@prisma/client";
+import { createServer } from '@graphql-yoga/node';
 import auth from './auth';
+import tokenRouter from './token'
+import loginRouter from './login'
+import s3urlRouter from './s3url'
+import feedRouter from './feed'
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient()
+const graphQLServer = createServer()
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -10,67 +16,40 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.raw({ type: "application/vnd.custom-type" }));
 app.use(express.text({ type: "text/html" }));
+app.use('/graphql', graphQLServer)
+app.use('/token', tokenRouter)
+app.use('/login', loginRouter)
+app.use('/feed', auth, feedRouter)
+app.use('/s3url', auth, s3urlRouter)
 
-app.get("/todos", async (req, res) => {
-  const todos = await prisma.todo.findMany({
-    orderBy: { createdAt: "desc" },
+app.get("/users/:id", auth, async (req, res) => {
+  const id = req.params.id;
+  const user = await prisma.user.findUnique({
+    where: { id },
   });
-
-  res.json(todos);
+  return res.json(user);
 });
 
-app.post("/todos", auth, async (req, res) => {
-  const todo = await prisma.todo.create({
+app.get("/events", auth, async (req, res) => {
+  const events = await prisma.event.findMany();
+  return res.json(events);
+});
+
+app.post('/event', auth, async (req, res) => {
+  const { author_id, title, text, slots, time, location } = req.body
+  const event = await prisma.event.create({
     data: {
-      completed: false,
-      createdAt: new Date(),
-      text: req.body.text ?? "Empty todo",
-    },
-  });
-
-  return res.json(todo);
-});
-
-app.get("/todos/:id", auth, async (req, res) => {
-  const id = req.params.id;
-  const todo = await prisma.todo.findUnique({
-    where: { id },
-  });
-
-  return res.json(todo);
-});
-
-app.put("/todos/:id", async (req, res) => {
-  const id = req.params.id;
-  const todo = await prisma.todo.update({
-    where: { id },
-    data: req.body,
-  });
-
-  return res.json(todo);
-});
-
-app.delete("/todos/:id", async (req, res) => {
-  const id = req.params.id;
-  await prisma.todo.delete({
-    where: { id },
-  });
-
-  return res.send({ status: "ok" });
-});
-
-app.get("/", async (req, res) => {
-  res.send(
-    `
-  <h1>Todo REST API</h1>
-  <h2>Available Routes</h2>
-  <pre>
-    GET, POST /todos
-    GET, PUT, DELETE /todos/:id
-  </pre>
-  `.trim(),
-  );
-});
+      author_id,
+      title,
+      text,
+      slots,
+      time,
+      latitude: location.latitude,
+      longitude: location.longitude,
+    }
+  })
+  return res.json(event)
+})
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
