@@ -31,15 +31,19 @@ app.get("/users/:id", auth, async (req, res) => {
 });
 
 app.post("/user", auth, async (req, res) => {
-  const { email, name, age } = req.body
-  const user = await prisma.user.create({
-    data: {
-      email,
-      name,
-      age
-    },
-  });
-  return res.json(user);
+  try {
+    const { email, name, age } = req.body
+    const user = await prisma.user.create({
+      data: {
+        email,
+        name,
+        age
+      },
+    });
+    return res.json(user);
+  } catch (error) {
+    console.log(error);
+  }
 });
 
 app.get("/events", auth, async (req, res) => {
@@ -49,15 +53,14 @@ app.get("/events", auth, async (req, res) => {
 
 app.post('/event', auth, async (req, res) => {
   try {
-    
-    const { author_id, title, text, slots, location } = req.body
+    const { author_id, title, text, slots, time, location } = req.body
     const event = await prisma.event.create({
       data: {
         author_id,
         title,
         text,
         slots,
-        // time,
+        time,
         latitude: location.latitude,
         longitude: location.longitude,
       }
@@ -65,7 +68,6 @@ app.post('/event', auth, async (req, res) => {
     return res.json(event)
   } catch (error) {
     console.log(error);
-    
   }
 })
 
