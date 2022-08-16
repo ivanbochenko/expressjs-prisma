@@ -4,6 +4,7 @@
   "main": "index.js",
   "author": "Jake Runzer",
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "dev": "nodemon src/index.ts",
     "build": "yarn migrate:deploy && tsc",
