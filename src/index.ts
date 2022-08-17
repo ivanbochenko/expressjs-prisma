@@ -1,6 +1,7 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
 import { createServer } from '@graphql-yoga/node';
+import schema from '../lib/graphqlSchema'
 import auth from './auth';
 import tokenRouter from './token'
 import loginRouter from './login'
@@ -8,7 +9,7 @@ import s3urlRouter from './s3url'
 import feedRouter from './feed'
 
 const prisma = new PrismaClient()
-const graphQLServer = createServer()
+const graphQLServer = createServer(schema)
 
 const app = express();
 const port = process.env.PORT || 3000;
