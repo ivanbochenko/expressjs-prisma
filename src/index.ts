@@ -1,7 +1,6 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
-import { createServer } from '@graphql-yoga/node';
-import schema from '../lib/graphqlSchema'
+import { createServer, createPubSub } from '@graphql-yoga/node';
 import auth from './auth';
 import tokenRouter from './token'
 import loginRouter from './login'
@@ -9,7 +8,45 @@ import s3urlRouter from './s3url'
 import feedRouter from './feed'
 
 const prisma = new PrismaClient()
-const graphQLServer = createServer(schema)
+
+const pubSub = createPubSub()
+
+const graphQLServer = createServer({
+  schema: {
+    typeDefs: /* GraphQL */ `
+      type User {
+        id: String!
+        email: String
+        phone: String
+        name: String
+        bio: String
+        avatar: String
+        age: Int
+      }
+      type Query {
+        user(id: String!): User
+      }
+    `,
+    resolvers: {
+      Query: {
+        user: async (obj, args, context, info) => await prisma.user.findUnique({
+          where: {id: args.id}
+        }),
+      },
+      // Subscription: {
+      //   messages: {
+      //     subscribe: async (_: any, { from }: any) => {
+      //       const channel = Math.random().toString(36).slice(2, 15);
+            
+      //       onMessagesUpdates(() => pubSub.publish(channel, { messages }))
+      //       pubSub.publish(channel, { messages })
+      //       return pubSub.asyncIterator(channel)
+      //     },
+      //   },
+      // },
+    },
+  },
+})
 
 const app = express();
 const port = process.env.PORT || 3000;
