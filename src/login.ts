@@ -11,27 +11,19 @@ router.post('/facebook', async (req, res) => {
   try {
     const { code, verifier } = req.body;
     const email = await getFacebookEmail(code, verifier)
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.upsert({
       where: { email },
-    });
-    // Check if user is new
-    let id = user?.id
-    // If not create a new user
-    if (!id) {
-      const user = await prisma.user.create({
-        data: {
-          email: email,
-        },
-      })
-    }
+      update: { email },
+      create: { email },
+    })
     // Create JWT
     const token = jwt.sign({
-      id: id,
+      id: user.id,
       email: email,
       exp: Math.floor(Date.now() / 1000) + 86400 * 30, // 30 days
     }, process.env.JWT_SECRET ?? '', { algorithm: 'HS256' })
-
-    res.status(200).json({token: token, id: id});
+    
+    res.status(200).json({token: token, id: user.id});
   } catch (error) {
     res.status(500).json(error)
     console.log(error)

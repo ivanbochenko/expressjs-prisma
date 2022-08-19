@@ -12,7 +12,7 @@ router.post('/', async (req, res) => {
     if (!req.body.token) return res.json( null );
     const { token } = req.body;
     const { id, phone }: any = jwt.verify(token, secret);
-    // Refresh the JWT for the user so they only get logged out after SESSION_LENGTH_IN_DAYS of inactivity
+    // Refresh the JWT for the user so they only get logged out after 30 DAYS of inactivity
     const newToken = jwt.sign({
       id,
       phone,

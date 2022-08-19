@@ -43,8 +43,8 @@ model Event {
 
 model Message {
   id          String @id @default(uuid())
-  text        String
   time        DateTime @default(now())
+  text        String
   author      User @relation(fields: [author_id], references: [id])
   author_id   String
   event       Event @relation(fields: [event_id], references: [id])
