@@ -32,7 +32,7 @@ const graphQLServer = createServer({
         id:         String!
         text:       String!
         time:       String!
-        author:     User
+        author:  User!
       }
 
       type Event {
@@ -77,25 +77,30 @@ const graphQLServer = createServer({
           where: {id: args.id}
         }),
         messages: async (obj, args, context, info) => {
-          await context.prisma.message.findMany({
-            where: {event_id: args.event_id}
+          const messages = await context.prisma.message.findMany({
+            where: {
+              event_id: args.event_id
+            },
+            include: {
+              author: true
+            }
           })
+          return messages
         }
       },
       Mutation: {
         postMessage: async (obj, args, context, info) => {
-          const event = args.event_id
           const message = await context.prisma.message.create({
             data: {
               text: args.text,
               author_id: args.author_id,
-              event_id: event,
+              event_id: args.event_id,
             }
           })
-          context.pubSub.publish("newMessage", {
-            newMessage: message,
-            event
-          })
+          // context.pubSub.publish("newMessage", {
+          //   newMessage: message,
+          //   event
+          // })
           return message
         },
         postEvent: async (obj, args, context, info) => await context.prisma.event.create({
