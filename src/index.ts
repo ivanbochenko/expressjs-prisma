@@ -65,7 +65,7 @@ const graphQLServer = createServer({
           latitude: Float!,
           longitude: Float!
         ): Event!
-        editUser(name: String!, age: Int!, bio: String!, avatar: String!): User!
+        editUser(id: String!, name: String!, age: Int!, bio: String!, avatar: String!): User!
       }
       
 
