@@ -1,6 +1,6 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
-import { createServer, createPubSub } from '@graphql-yoga/node';
+import { createServer, createPubSub, pipe, filter } from '@graphql-yoga/node';
 import auth from './auth';
 import tokenRouter from './token'
 import loginRouter from './login'
@@ -8,6 +8,7 @@ import s3urlRouter from './s3url'
 import feedRouter from './feed'
 
 // Todo: configure message subscriptions
+// Transform date to string
 
 const prisma = new PrismaClient()
 
@@ -31,8 +32,8 @@ const graphQLServer = createServer({
       type Message {
         id:         String!
         text:       String!
-        time:       String!
-        author:  User!
+        time:       String
+        author:     User
       }
 
       type Event {
@@ -68,18 +69,22 @@ const graphQLServer = createServer({
         editUser(id: String!, name: String!, age: Int!, bio: String!, avatar: String!): User!
       }
       
-
+      type Subscription {
+        messages(event_id: String!): [Message]
+      }
 
     `,
     resolvers: {
       Query: {
-        user: async (obj, args, context, info) => await context.prisma.user.findUnique({
-          where: {id: args.id}
-        }),
-        messages: async (obj, args, context, info) => {
-          const messages = await context.prisma.message.findMany({
+        user: async (_, { id }, { prisma }, info) => {
+          const user = await prisma.user.findUnique({ where: { id } })
+          return user
+        },
+        
+        messages: async (_, { event_id }, { prisma }, info) => {
+          const messages = await prisma.message.findMany({
             where: {
-              event_id: args.event_id
+              event_id
             },
             include: {
               author: true
@@ -89,55 +94,63 @@ const graphQLServer = createServer({
         }
       },
       Mutation: {
-        postMessage: async (obj, args, context, info) => {
-          const message = await context.prisma.message.create({
+        postMessage: async (_, { text, author_id, event_id}, { pubSub, prisma }, info) => {
+          const message = await prisma.message.create({
             data: {
-              text: args.text,
-              author_id: args.author_id,
-              event_id: args.event_id,
+              text,
+              author_id,
+              event_id,
+            },
+            include: {
+              author: true
             }
           })
-          // context.pubSub.publish("newMessage", {
-          //   newMessage: message,
-          //   event
-          // })
+          pubSub.publish('newMessages', { message, event_id })
           return message
         },
-        postEvent: async (obj, args, context, info) => await context.prisma.event.create({
-          data: {
-            author_id: args.author_id,
-            photo: args.photo,
-            title: args.title,
-            text: args.text,
-            slots: args.slots,
-            time: args.time,
-            latitude: args.latitude,
-            longitude: args.longitude,
-          }
-        }),
-        editUser: async (obj, args, context, info) => await context.prisma.user.update({
-          where: {
-            id: args.id
-          },
-          data: {
-            name: args.name,
-            bio: args.bio,
-            avatar: args.avatar,
-            age: args.age,
-          }
-        }),
+        postEvent: async (_, { author_id, photo, title, text, slots, time, latitude, longitude }, { pubSub, prisma }, info) => {
+          const event = await prisma.event.create({
+            data: {
+              author_id,
+              photo,
+              title,
+              text,
+              slots,
+              time,
+              latitude,
+              longitude,
+            }
+          })
+          return event
+        },
+        editUser: async (_, { id, name, age, bio, avatar }, { pubSub, prisma }, info) => {
+          const user = await prisma.user.update({
+            where: {
+              id
+            },
+            data: {
+              name,
+              bio,
+              avatar,
+              age,
+            }
+          })
+          return user
+        }
       },
-      // Subscription: {
-      //   messages: {
-      //     subscribe: async (_: any, { from }: any) => {
-      //       const channel = Math.random().toString(36).slice(2, 15);
-            
-      //       onMessagesUpdates(() => pubSub.publish(channel, { messages }))
-      //       pubSub.publish(channel, { messages })
-      //       return pubSub.asyncIterator(channel)
-      //     },
-      //   },
-      // },
+
+      // Use pipe to filter messages by id of event you are subscribing to
+
+      Subscription: {
+        messages: {
+          subscribe: async (_, { event_id }, { pubSub, prisma }, info) => 
+            pipe(
+              pubSub.subscribe('newMessages'),
+              filter(payload => payload.event_id === event_id)
+            ),
+          resolve: (value) => value
+        },
+      },      
     },
   },
 })
@@ -160,5 +173,5 @@ app.get("/events", auth, async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
+  console.log(`App listening at http://localhost:${port}`);
 });

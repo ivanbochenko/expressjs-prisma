@@ -19,8 +19,8 @@ router.post('/facebook', async (req, res) => {
     // Create JWT
     const token = jwt.sign({
       id: user.id,
-      email: email,
-      exp: Math.floor(Date.now() / 1000) + 86400 * 30, // 30 days
+      email,
+      exp: Math.floor(Date.now() / 1000) + 86400 * 30, // Valid for 30 days
     }, process.env.JWT_SECRET ?? '', { algorithm: 'HS256' })
     
     res.status(200).json({token: token, id: user.id});

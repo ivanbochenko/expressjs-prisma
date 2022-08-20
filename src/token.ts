@@ -12,13 +12,13 @@ router.post('/', async (req, res) => {
     if (!req.body.token) return res.json( null );
     const { token } = req.body;
     const { id, phone }: any = jwt.verify(token, secret);
-    // Refresh the JWT for the user so they only get logged out after 30 DAYS of inactivity
+    // Refresh JWT
     const newToken = jwt.sign({
       id,
       phone,
-      exp: Math.floor(Date.now() / 1000) + 86400 * 30, // 30 days
+      exp: Math.floor(Date.now() / 1000) + 86400 * 30, // Valid for 30 days
     }, secret )
-    // send JWT in response to the client, necessary for API requests to Hasrua
+    // send JWT in response to the client
     res.status(200).json({token: newToken, id: id});
   } catch (error) {
     console.log(error)
