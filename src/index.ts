@@ -9,6 +9,7 @@ import feedRouter from './feed'
 
 // Todo: configure message subscriptions
 // Transform date to string
+// Figure out date
 
 const prisma = new PrismaClient()
 

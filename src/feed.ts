@@ -12,7 +12,6 @@ type Event = {
   title: string,
   text: string,
   slots: number,
-  date: Date,
   time: Date,
   latitude: number,
   longitude: number,
@@ -26,9 +25,9 @@ router.post('/', async (req, res) => {
     let cachedEvents: any = cache.get('events');
     if (cachedEvents == null) {
       // Query data from API
-      const date = new Date()
+      const time = new Date()
       const events = await prisma.event.findMany({
-        where: { date }
+        where: { time }
       })
       cachedEvents = events
       cache.set('events', events);
