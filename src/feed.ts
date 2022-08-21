@@ -7,15 +7,15 @@ const prisma = new PrismaClient();
 const cache = new NodeCache({ stdTTL: 300 }) // default time-to-live 5 min
 
 type Event = {
-  id: string,
-  author_id: string,
-  title: string,
-  text: string,
-  slots: number,
-  time: Date,
-  latitude: number,
-  longitude: number,
-  distance: number
+  id:         string,
+  author_id:  string,
+  title:      string,
+  text:       string,
+  time:       Date,
+  slots:      number,
+  latitude:   number,
+  longitude:  number,
+  distance:   number
 }
 
 router.post('/', async (req, res) => {
@@ -24,10 +24,15 @@ router.post('/', async (req, res) => {
     // try to get data from cache
     let cachedEvents: any = cache.get('events');
     if (cachedEvents == null) {
-      // Query data from API
-      const time = new Date()
+      // Query events not older than todays midnight
+      const date = new Date()
+      date.setHours(0,0,0,0)
       const events = await prisma.event.findMany({
-        where: { time }
+        where: { 
+          time: {
+            gt: date
+          }
+        }
       })
       cachedEvents = events
       cache.set('events', events);
