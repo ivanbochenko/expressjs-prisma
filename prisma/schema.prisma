@@ -33,8 +33,7 @@ model Event {
   title       String
   text        String?
   slots       Int
-  date        DateTime @default(now())
-  time        DateTime @default(now()) @db.Time(0)
+  time        DateTime @default(now())
   latitude    Float
   longitude   Float
   messages    Message[]

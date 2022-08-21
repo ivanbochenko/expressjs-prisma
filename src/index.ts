@@ -1,6 +1,6 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
-import { createServer, createPubSub, pipe, filter } from '@graphql-yoga/node';
+import { createServer, createPubSub, pipe, filter, GraphQLYogaError } from '@graphql-yoga/node';
 import auth from './auth';
 import tokenRouter from './token'
 import loginRouter from './login'
@@ -15,11 +15,13 @@ const prisma = new PrismaClient()
 const pubSub = createPubSub()
 
 const graphQLServer = createServer({
+  maskedErrors: false,
   context: { pubSub, prisma },
   schema: {
     typeDefs: /* GraphQL */ `
       type User {
-        id:         String!
+        id:         ID!
+        created_at: String
         email:      String
         phone:      String
         name:       String
@@ -30,47 +32,46 @@ const graphQLServer = createServer({
       }
 
       type Message {
-        id:         String!
+        id:         ID!
         text:       String!
         time:       String
-        author:     User
+        author:     User!
       }
 
       type Event {
-        id:         String!
-        author_id:  User!
-        photo:      String
-        title:      String
+        id:         ID!
+        author_id:  ID!
+        photo:      String!
+        title:      String!
         text:       String
         slots:      Int
-        date:       String
         time:       String
         latitude:   Float
         longitude:  Float
       }
 
       type Query {
-        user(id: String!): User
-        messages(event_id: String!): [Message]
+        user(id: ID!): User
+        messages(event_id: ID!): [Message]
       }
 
       type Mutation {
-        postMessage(text: String!, author_id: String!, event_id: String!): Message!
+        postMessage(author_id: ID!, event_id: ID!, text: String!): Message!
         postEvent(
-          author_id: String!,
+          author_id: ID!,
           photo: String!,
           title: String!,
           text: String!,
           slots: Int!,
-          time: String!,
+          time: String,
           latitude: Float!,
           longitude: Float!
         ): Event!
-        editUser(id: String!, name: String!, age: Int!, bio: String!, avatar: String!): User!
+        editUser(id: ID!, name: String!, age: Int!, bio: String!, avatar: String!): User!
       }
       
       type Subscription {
-        messages(event_id: String!): [Message]
+        messages(event_id: ID!): Message!
       }
 
     `,
@@ -94,7 +95,7 @@ const graphQLServer = createServer({
         }
       },
       Mutation: {
-        postMessage: async (_, { text, author_id, event_id}, { pubSub, prisma }, info) => {
+        postMessage: async (_, { text, author_id, event_id }, { pubSub, prisma }, info) => {
           const message = await prisma.message.create({
             data: {
               text,
@@ -105,7 +106,7 @@ const graphQLServer = createServer({
               author: true
             }
           })
-          pubSub.publish('newMessages', { message, event_id })
+          pubSub.publish('newMessages', message)
           return message
         },
         postEvent: async (_, { author_id, photo, title, text, slots, time, latitude, longitude }, { pubSub, prisma }, info) => {
@@ -146,7 +147,7 @@ const graphQLServer = createServer({
           subscribe: async (_, { event_id }, { pubSub, prisma }, info) => 
             pipe(
               pubSub.subscribe('newMessages'),
-              filter(payload => payload.event_id === event_id)
+              filter(payload => payload.event_id == event_id)
             ),
           resolve: (value) => value
         },
