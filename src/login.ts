@@ -1,6 +1,6 @@
 import express from 'express'
 import jwt from 'jsonwebtoken'
-import fetch from "node-fetch";
+import axios from 'axios'
 import { PrismaClient } from "@prisma/client";
 
 const router = express.Router()
@@ -43,12 +43,7 @@ const getFacebookEmail = async (code: string, verifier: string) => {
   "&code_verifier=" + verifier +
   "&code=" + code;
 
-  const response = await fetch(link)
-  const { access_token }: any = await response.json()
-  const apiRes = await fetch(
-    `https://graph.facebook.com/v14.0/me?fields=email&access_token=${access_token}`,
-    { method: 'POST' }
-  )
-  const { email }: any = await apiRes.json()
-  return email
+  const { data: res } = await axios.get(link)
+  const { data } = await axios.post(`https://graph.facebook.com/v14.0/me?fields=email&access_token=${res.access_token}`)
+  return data.email
 }
