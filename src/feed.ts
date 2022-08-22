@@ -30,7 +30,7 @@ router.post('/', async (req, res) => {
       const events = await prisma.event.findMany({
         where: { 
           time: {
-            gt: date
+            gte: date
           }
         }
       })
