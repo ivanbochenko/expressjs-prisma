@@ -60,15 +60,15 @@ const graphQLServer = createServer({
         postMessage(author_id: ID!, event_id: ID!, text: String!): Message!
         postEvent(
           author_id: ID!,
-          photo: String!,
-          title: String!,
-          text: String!,
-          slots: Int!,
-          time: String,
-          latitude: Float!,
+          photo:     String!,
+          title:     String!,
+          text:      String!,
+          slots:     Int!,
+          time:      String,
+          latitude:  Float!,
           longitude: Float!
         ): Event!
-        editUser(id: ID!, name: String!, age: Int!, bio: String!, avatar: String!): User!
+        editUser(id: ID!, name: String!, age: Int, bio: String, avatar: String): User!
       }
       
       type Subscription {
