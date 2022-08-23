@@ -52,9 +52,9 @@ model Message {
 
 model Match {
   id          String @id @default(uuid())
-  author      User @relation(fields: [author_id], references: [id])
-  author_id   String
+  user        User @relation(fields: [user_id], references: [id])
+  user_id     String
   event       Event @relation(fields: [event_id], references: [id])
   event_id    String
-  accepted    Boolean
+  accepted    Boolean @default(false)
 }

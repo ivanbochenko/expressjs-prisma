@@ -9,7 +9,6 @@ import feedRouter from './feed'
 
 // Todo: configure message subscriptions
 // Transform date to string
-// Figure out date
 
 const prisma = new PrismaClient()
 
@@ -19,10 +18,10 @@ const graphQLServer = createServer({
   maskedErrors: false,
   context: { pubSub, prisma },
   schema: {
-    typeDefs: /* GraphQL */ `
+    typeDefs: `
       type User {
         id:         ID!
-        created_at: String
+        created_at: DateTime!
         email:      String
         phone:      String
         name:       String
@@ -32,13 +31,6 @@ const graphQLServer = createServer({
         messages:   [Message]
       }
 
-      type Message {
-        id:         ID!
-        text:       String!
-        time:       String
-        author:     User!
-      }
-
       type Event {
         id:         ID!
         author_id:  ID!
@@ -46,10 +38,35 @@ const graphQLServer = createServer({
         title:      String!
         text:       String
         slots:      Int
-        time:       String
+        time:       DateTime!
         latitude:   Float
         longitude:  Float
       }
+
+      type Message {
+        id:         ID!
+        text:       String!
+        time:       DateTime!
+        author:     User!
+      }
+
+      type Match {
+        id:         ID!
+        user_id:    ID!
+        event_id:   ID!
+        accepted:   Boolean
+      }
+
+      input ListMatches {
+        user_id:    ID!
+        event_id:   ID!
+      }
+
+      type Many {
+        count: Int!
+      }
+
+      scalar DateTime
 
       type Query {
         user(id: ID!): User
@@ -64,11 +81,12 @@ const graphQLServer = createServer({
           title:     String!,
           text:      String!,
           slots:     Int!,
-          time:      String,
+          time:      DateTime,
           latitude:  Float!,
           longitude: Float!
         ): Event!
         editUser(id: ID!, name: String!, age: Int, bio: String, avatar: String): User!
+        createMatch(input: [ListMatches!]!): Many
       }
       
       type Subscription {
@@ -110,7 +128,7 @@ const graphQLServer = createServer({
           pubSub.publish('newMessages', message)
           return message
         },
-        postEvent: async (_, { author_id, photo, title, text, slots, time, latitude, longitude }, { pubSub, prisma }, info) => {
+        postEvent: async (_, { author_id, photo, title, text, slots, time, latitude, longitude }, { prisma }, info) => {
           const event = await prisma.event.create({
             data: {
               author_id,
@@ -125,7 +143,7 @@ const graphQLServer = createServer({
           })
           return event
         },
-        editUser: async (_, { id, name, age, bio, avatar }, { pubSub, prisma }, info) => {
+        editUser: async (_, { id, name, age, bio, avatar }, { prisma }, info) => {
           const user = await prisma.user.update({
             where: {
               id
@@ -138,6 +156,13 @@ const graphQLServer = createServer({
             }
           })
           return user
+        },
+        createMatch: async (_, { input }, { prisma }, info) => {
+          const createMany = await prisma.match.createMany({
+            data: input,
+            skipDuplicates: true,
+          })
+          return createMany
         }
       },
 
@@ -145,7 +170,7 @@ const graphQLServer = createServer({
 
       Subscription: {
         messages: {
-          subscribe: async (_, { event_id }, { pubSub, prisma }, info) => 
+          subscribe: async (_, { event_id }, { pubSub }, info) => 
             pipe(
               pubSub.subscribe('newMessages'),
               filter(payload => payload.event_id == event_id)
