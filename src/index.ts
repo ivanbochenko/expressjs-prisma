@@ -82,7 +82,7 @@ const graphQLServer = createServer({
       
       type Subscription {
         messages(event_id: ID!): Message!
-        matches(event_id: ID!): [Match]
+        matches(event_id: ID!): Match!
       }
 
     `,
