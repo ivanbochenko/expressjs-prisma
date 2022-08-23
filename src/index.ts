@@ -57,15 +57,6 @@ const graphQLServer = createServer({
         accepted:   Boolean
       }
 
-      input ListMatches {
-        user_id:    ID!
-        event_id:   ID!
-      }
-
-      type Many {
-        count: Int!
-      }
-
       scalar DateTime
 
       type Query {
@@ -86,11 +77,12 @@ const graphQLServer = createServer({
           longitude: Float!
         ): Event!
         editUser(id: ID!, name: String!, age: Int, bio: String, avatar: String): User!
-        createMatch(input: [ListMatches!]!): Many
+        createMatch(user_id: ID!, event_id: ID!): Match!
       }
       
       type Subscription {
         messages(event_id: ID!): Message!
+        matches(event_id: ID!): [Match]
       }
 
     `,
@@ -157,12 +149,15 @@ const graphQLServer = createServer({
           })
           return user
         },
-        createMatch: async (_, { input }, { prisma }, info) => {
-          const createMany = await prisma.match.createMany({
-            data: input,
-            skipDuplicates: true,
+        createMatch: async (_, { user_id, event_id }, { prisma, pubSub }, info) => {
+          const match = await prisma.match.create({
+            data: {
+              user_id,
+              event_id
+            },
           })
-          return createMany
+          pubSub.publish('newMatches', match)
+          return match
         }
       },
 
@@ -173,6 +168,14 @@ const graphQLServer = createServer({
           subscribe: async (_, { event_id }, { pubSub }, info) => 
             pipe(
               pubSub.subscribe('newMessages'),
+              filter(payload => payload.event_id == event_id)
+            ),
+          resolve: (value) => value
+        },
+        matches: {
+          subscribe: async (_, { event_id }, { pubSub }, info) => 
+            pipe(
+              pubSub.subscribe('newMatches'),
               filter(payload => payload.event_id == event_id)
             ),
           resolve: (value) => value
