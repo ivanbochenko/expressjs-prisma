@@ -32,6 +32,9 @@ router.post('/', async (req, res) => {
           time: {
             gte: date
           }
+        },
+        include: {
+          matches: true
         }
       })
       cachedEvents = events
