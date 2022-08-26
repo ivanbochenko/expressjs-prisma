@@ -45,5 +45,6 @@ const getFacebookEmail = async (code: string, verifier: string) => {
 
   const { data: res } = await axios.get(link)
   const { data } = await axios.post(`https://graph.facebook.com/v14.0/me?fields=email&access_token=${res.access_token}`)
+
   return data.email
 }
