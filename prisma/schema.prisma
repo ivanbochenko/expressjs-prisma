@@ -20,6 +20,7 @@ model User {
   bio         String?
   avatar      String?
   age         Int?
+  sex         String?
   events      Event[]
   matches     Match[]
   messages    Message[]
