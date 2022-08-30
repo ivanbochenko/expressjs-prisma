@@ -84,16 +84,17 @@ const graphQLServer = createServer({
           })
           return event
         },
-        editUser: async (_, { id, name, age, bio, avatar }, { prisma }, info) => {
+        editUser: async (_, { id, name, age, sex, bio, avatar }, { prisma }, info) => {
           const user = await prisma.user.update({
             where: {
               id
             },
             data: {
               name,
+              age,
+              sex,
               bio,
               avatar,
-              age,
             }
           })
           return user
