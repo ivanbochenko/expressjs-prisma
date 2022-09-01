@@ -141,11 +141,11 @@ const port = process.env.PORT || 3000
 app.use(express.json())
 app.use(express.raw({ type: "application/vnd.custom-type" }))
 app.use(express.text({ type: "text/html" }))
-app.use('/graphql', graphQLServer)
 app.use('/token', tokenRouter)
 app.use('/login', loginRouter)
 app.use('/feed', auth, feedRouter)
 app.use('/s3url', auth, s3urlRouter)
+app.use('/graphql', auth, graphQLServer)
 
 app.get("/events", auth, async (req, res) => {
   const events = await prisma.event.findMany()
