@@ -147,21 +147,6 @@ app.use('/feed', auth, feedRouter)
 app.use('/s3url', auth, s3urlRouter)
 app.use('/graphql', auth, graphQLServer)
 
-app.get("/events", auth, async (req, res) => {
-  const events = await prisma.event.findMany()
-  return res.json(events);
-});
-
-app.post("/user", auth, async (req, res) => {
-  const { email, name } = req.body
-  const user = await prisma.user.upsert({
-    where: { email },
-    update: { email, name },
-    create: { email, name },
-  })
-  return res.json(user);
-});
-
 app.listen(port, () => {
   console.log(`App listening at http://localhost:${port}`);
 });
