@@ -1,15 +1,14 @@
 import express from 'express'
 import jwt from 'jsonwebtoken'
 import axios from 'axios'
-import { PrismaClient } from "@prisma/client";
 
 const router = express.Router()
-const prisma = new PrismaClient();
 
 // Create new user with facebook email
 
 router.post('/facebook', async (req, res) => {
   try {
+    const prisma = req.app.get('prisma')
     const { code, verifier } = req.body;
     const email = await getFacebookEmail(code, verifier)
     const user = await prisma.user.upsert({
@@ -17,14 +16,14 @@ router.post('/facebook', async (req, res) => {
       update: { email },
       create: { email },
     })
+    const id = user.id
     // Create JWT
     const token = jwt.sign({
-      id: user.id,
+      id,
       email,
       exp: Math.floor(Date.now() / 1000) + 86400 * 30, // Valid for 30 days
     }, process.env.JWT_SECRET ?? '', { algorithm: 'HS256' })
-    
-    res.status(200).json({token: token, id: user.id});
+    res.status(200).json({token, id})
   } catch (error) {
     res.status(500).json(error)
     console.log(error)

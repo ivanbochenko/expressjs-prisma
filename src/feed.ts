@@ -1,9 +1,7 @@
 import express from 'express'
-import { PrismaClient } from "@prisma/client"
 import NodeCache from 'node-cache';
 
 const router = express.Router()
-const prisma = new PrismaClient();
 const cache = new NodeCache({ stdTTL: 300 }) // default time-to-live 5 min
 
 type Event = {
@@ -21,6 +19,8 @@ type Event = {
 router.post('/', async (req, res) => {
   try {
     const { location } = req.body
+    const prisma = req.app.get('prisma')
+
     // try to get data from cache
     let cachedEvents: any = cache.get('events');
     if (cachedEvents == null) {
