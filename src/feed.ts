@@ -47,6 +47,13 @@ router.post('/', async (req, res) => {
                 }
               }
             }
+          },
+          author: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true
+            }
           }
         }
       })
