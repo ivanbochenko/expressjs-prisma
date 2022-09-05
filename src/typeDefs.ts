@@ -44,7 +44,7 @@ const typeDefs = `
   type Query {
     user(id: ID!): User
     messages(event_id: ID!): [Message]
-    eventsToday(author_id: ID!): [Event]
+    matches(author_id: ID!): [Match]
   }
 
   type Mutation {

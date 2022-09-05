@@ -34,7 +34,20 @@ router.post('/', async (req, res) => {
           }
         },
         include: {
-          matches: true
+          matches: {
+            where: {
+              accepted: true
+            },
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  avatar: true
+                }
+              }
+            }
+          }
         }
       })
       cachedEvents = events
