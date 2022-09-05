@@ -37,6 +37,8 @@ const typeDefs = `
     user_id:    ID!
     event_id:   ID!
     accepted:   Boolean
+    event:      Event!
+    user:       User!
   }
 
   scalar DateTime
