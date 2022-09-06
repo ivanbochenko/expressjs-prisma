@@ -38,7 +38,7 @@ router.post('/', async (req, res) => {
             where: {
               accepted: true
             },
-            include: {
+            select: {
               user: {
                 select: {
                   id: true,

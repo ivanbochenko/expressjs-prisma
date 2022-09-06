@@ -47,6 +47,7 @@ const typeDefs = `
     user(id: ID!): User
     messages(event_id: ID!): [Message]
     matches(user_id: ID!): [Match]
+    lastEvent(author_id: ID!): Event
   }
 
   type Mutation {
@@ -63,6 +64,7 @@ const typeDefs = `
     ): Event!
     editUser(id: ID!, name: String!, age: Int!, sex: String!, bio: String, avatar: String): User!
     createMatch(user_id: ID!, event_id: ID!): Match!
+    editMatch(id: ID!): Match!
   }
 
   type Subscription {

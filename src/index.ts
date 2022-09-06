@@ -22,13 +22,11 @@ const graphQLServer = createServer({
     typeDefs,
     resolvers: {
       Query: {
-        user: async (_, { id }, { prisma }, info) => {
+        user: async (_, { id }, { prisma } ) => {
           const user = await prisma.user.findUnique({ where: { id } })
           return user
         },
-        matches: async (_, { user_id }, { prisma }, info) => {
-          // const date = new Date()
-          // date.setHours(0,0,0,0)
+        matches: async (_, { user_id }, { prisma } ) => {
           const event = await prisma.match.findMany({
             where: {
               user_id,
@@ -40,7 +38,7 @@ const graphQLServer = createServer({
           })
           return event
         },
-        messages: async (_, { event_id }, { prisma }, info) => {
+        messages: async (_, { event_id }, { prisma } ) => {
           const messages = await prisma.message.findMany({
             where: {
               event_id
@@ -50,10 +48,38 @@ const graphQLServer = createServer({
             }
           })
           return messages
+        },
+        lastEvent: async (_, { author_id }, { prisma } ) => {
+          const time = new Date()
+          time.setHours(0,0,0,0)
+          const events = await prisma.event.findFirst({
+            where: {
+              author_id,
+              time: {
+                gt: time
+              }
+            },
+            include: {
+              matches: {
+                select: {
+                  id: true,
+                  accepted: true,
+                  user: {
+                    select: {
+                      id: true,
+                      name: true,
+                      avatar: true,
+                    }
+                  }
+                }
+              },
+            }
+          })
+          return events
         }
       },
       Mutation: {
-        postMessage: async (_, { text, author_id, event_id }, { pubSub, prisma }, info) => {
+        postMessage: async (_, { text, author_id, event_id }, { pubSub, prisma } ) => {
           const message = await prisma.message.create({
             data: {
               text,
@@ -67,7 +93,7 @@ const graphQLServer = createServer({
           pubSub.publish('newMessages', message)
           return message
         },
-        postEvent: async (_, { author_id, photo, title, text, slots, time, latitude, longitude }, { prisma }, info) => {
+        postEvent: async (_, { author_id, photo, title, text, slots, time, latitude, longitude }, { prisma } ) => {
           const event = await prisma.event.create({
             data: {
               author_id,
@@ -82,7 +108,7 @@ const graphQLServer = createServer({
           })
           return event
         },
-        editUser: async (_, { id, name, age, sex, bio, avatar }, { prisma }, info) => {
+        editUser: async (_, { id, name, age, sex, bio, avatar }, { prisma } ) => {
           const user = await prisma.user.update({
             where: {
               id
@@ -97,7 +123,7 @@ const graphQLServer = createServer({
           })
           return user
         },
-        createMatch: async (_, { user_id, event_id }, { prisma, pubSub }, info) => {
+        createMatch: async (_, { user_id, event_id }, { prisma, pubSub } ) => {
           const match = await prisma.match.create({
             data: {
               user_id,
@@ -106,6 +132,18 @@ const graphQLServer = createServer({
           })
           pubSub.publish('newMatches', match)
           return match
+        },
+        editMatch: async (_, { id }, { prisma, pubSub } ) => {
+          const match = await prisma.match.update({
+            where: {
+              id
+            },
+            data: {
+              accepted: true
+            },
+          })
+          // pubSub.publish('newMatches', match)
+          return match
         }
       },
 
@@ -113,7 +151,7 @@ const graphQLServer = createServer({
 
       Subscription: {
         messages: {
-          subscribe: async (_, { event_id }, { pubSub }, info) =>
+          subscribe: async (_, { event_id }, { pubSub } ) =>
             pipe(
               pubSub.subscribe('newMessages'),
               filter(payload => payload.event_id == event_id)
@@ -121,7 +159,7 @@ const graphQLServer = createServer({
           resolve: (value) => value
         },
         matches: {
-          subscribe: async (_, { event_id }, { pubSub }, info) => 
+          subscribe: async (_, { event_id }, { pubSub } ) => 
             pipe(
               pubSub.subscribe('newMatches'),
               filter(payload => payload.event_id == event_id)
@@ -139,12 +177,13 @@ const port = process.env.PORT || 3000
 app.use(express.json())
 app.use(express.raw({ type: "application/vnd.custom-type" }))
 app.use(express.text({ type: "text/html" }))
-app.set('prisma', prisma) // Access db from routers
+// Access db from routers, prevents creating multiple clients
+app.set('prisma', prisma)
 app.use('/token', tokenRouter)
 app.use('/login', loginRouter)
 app.use('/feed', auth, feedRouter)
 app.use('/s3url', auth, s3urlRouter)
-app.use('/graphql', auth, graphQLServer)
+app.use('/graphql', graphQLServer)
 
 app.listen(port, () => {
   console.log(`App listening at http://localhost:${port}`);
