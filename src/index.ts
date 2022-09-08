@@ -8,9 +8,6 @@ import s3urlRouter from './s3url'
 import feedRouter from './feed'
 import typeDefs from './typeDefs'
 
-// Todo: configure message subscriptions
-// Transform date to string
-
 const prisma = new PrismaClient()
 
 const pubSub = createPubSub()
@@ -166,7 +163,7 @@ const graphQLServer = createServer({
             ),
           resolve: (value) => value
         },
-      },      
+      },
     },
   },
 })
