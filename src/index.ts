@@ -40,6 +40,9 @@ const graphQLServer = createServer({
             where: {
               event_id
             },
+            orderBy: {
+              time: 'asc',
+            },
             include: {
               author: true
             }
