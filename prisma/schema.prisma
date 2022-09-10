@@ -47,15 +47,15 @@ model Message {
   text        String
   author      User @relation(fields: [author_id], references: [id])
   author_id   String
-  event       Event @relation(fields: [event_id], references: [id])
+  event       Event @relation(fields: [event_id], references: [id], onDelete: Cascade)
   event_id    String
 }
 
 model Match {
   id          String @id @default(uuid())
-  user        User @relation(fields: [user_id], references: [id])
+  user        User @relation(fields: [user_id], references: [id], onDelete: Cascade)
   user_id     String
-  event       Event @relation(fields: [event_id], references: [id])
+  event       Event @relation(fields: [event_id], references: [id], onDelete: Cascade)
   event_id    String
   accepted    Boolean @default(false)
 }
