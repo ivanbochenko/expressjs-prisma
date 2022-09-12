@@ -13,12 +13,13 @@ type Event = {
   slots:      number,
   latitude:   number,
   longitude:  number,
-  distance:   number
+  distance:   number,
+  matches: []
 }
 
 router.post('/', async (req, res) => {
   try {
-    const { location } = req.body
+    const { location, id } = req.body
     const prisma = req.app.get('prisma')
 
     // try to get data from cache
@@ -31,7 +32,7 @@ router.post('/', async (req, res) => {
         where: { 
           time: {
             gte: date
-          }
+          },
         },
         include: {
           matches: {
@@ -60,8 +61,9 @@ router.post('/', async (req, res) => {
       cachedEvents = events
       cache.set('events', events);
     }
-    // Sort events by distance to user and return list of 20 closest event ids
+    // Exclude user's own and swiped events, sort them by distance to user and return list of 20 closest
     const closestEvents = cachedEvents
+      .filter((event: any) => (event.author_id !== id && !event.matches.some((m: any) => m.user?.id === id)))
       .map((event: Event) => ({
         ...event,
         distance: Math.round(getDistance(
