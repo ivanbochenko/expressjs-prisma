@@ -23,6 +23,10 @@ const graphQLServer = createServer({
           const user = await prisma.user.findUnique({ where: { id } })
           return user
         },
+        event: async (_, { id }, { prisma } ) => {
+          const event = await prisma.event.findUnique({ where: { id } })
+          return event
+        },
         matches: async (_, { user_id }, { prisma } ) => {
           const event = await prisma.match.findMany({
             where: {

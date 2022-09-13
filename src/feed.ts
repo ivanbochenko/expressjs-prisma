@@ -61,7 +61,7 @@ router.post('/', async (req, res) => {
       cachedEvents = events
       cache.set('events', events);
     }
-    // Exclude user's own and swiped events, sort them by distance to user and return list of 20 closest
+    // Exclude user's own and swiped events, sort them by distance and return list of 20 closest
     const closestEvents = cachedEvents
       .filter((event: any) => (event.author_id !== id && !event.matches.some((m: any) => m.user?.id === id)))
       .map((event: Event) => ({
