@@ -23,6 +23,7 @@ const typeDefs = `
     latitude:   Float
     longitude:  Float
     matches:    [Match]
+    author:     User
   }
 
   type Message {
