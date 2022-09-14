@@ -67,6 +67,7 @@ const graphQLServer = createServer({
               }
             },
             include: {
+              author: true,
               matches: {
                 select: {
                   id: true,
