@@ -26,7 +26,22 @@ const graphQLServer = createServer({
         event: async (_, { id }, { prisma } ) => {
           const event = await prisma.event.findUnique({
             where: { id },
-            include: { author: true }
+            include: {
+              author: true,
+              matches: {
+                select: {
+                  id: true,
+                  accepted: true,
+                  user: {
+                    select: {
+                      id: true,
+                      name: true,
+                      avatar: true,
+                    }
+                  }
+                }
+              },
+            }
           })
           return event
         },
