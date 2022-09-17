@@ -29,6 +29,9 @@ const graphQLServer = createServer({
             include: {
               author: true,
               matches: {
+                where: {
+                  accepted: true
+                },
                 select: {
                   id: true,
                   accepted: true,
