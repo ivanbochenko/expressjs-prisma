@@ -158,6 +158,17 @@ const graphQLServer = createServer({
               user_id,
               event_id
             },
+            select: {
+              id: true,
+              accepted: true,
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  avatar: true,
+                }
+              }
+            }
           })
           pubSub.publish('newMatches', match)
           return match
