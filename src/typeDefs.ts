@@ -47,6 +47,7 @@ const typeDefs = `
   type Query {
     user(id: ID!): User
     event(id: ID!): Event
+    events(author_id: ID!): [Event]
     messages(event_id: ID!): [Message]
     matches(user_id: ID!): [Match]
     lastEvent(author_id: ID!): Event

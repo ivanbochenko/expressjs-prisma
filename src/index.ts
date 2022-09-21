@@ -48,6 +48,31 @@ const graphQLServer = createServer({
           })
           return event
         },
+        events: async (_, { author_id }, { prisma } ) => {
+          const events = await prisma.event.findMany({
+            where: { author_id },
+            include: {
+              author: true,
+              matches: {
+                where: {
+                  accepted: true
+                },
+                select: {
+                  id: true,
+                  accepted: true,
+                  user: {
+                    select: {
+                      id: true,
+                      name: true,
+                      avatar: true,
+                    }
+                  }
+                }
+              },
+            }
+          })
+          return events
+        },
         matches: async (_, { user_id }, { prisma } ) => {
           const event = await prisma.match.findMany({
             where: {
