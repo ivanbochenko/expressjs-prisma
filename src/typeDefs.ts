@@ -65,6 +65,7 @@ const typeDefs = `
 
   type Mutation {
     postMessage(author_id: ID!, event_id: ID!, text: String!): Message!
+    postReview(author_id: ID!, user_id: ID!, text: String!, stars: Int!): Review!
     postEvent(
       author_id: ID!,
       photo:     String!,
