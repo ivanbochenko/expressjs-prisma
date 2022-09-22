@@ -42,12 +42,22 @@ const typeDefs = `
     user:       User!
   }
 
+  type Review {
+    id:         ID!
+    text:       String!
+    time:       DateTime!
+    stars:      Int!
+    author:     User!
+    user:       User!
+  }
+
   scalar DateTime
 
   type Query {
     user(id: ID!): User
     event(id: ID!): Event
     events(author_id: ID!): [Event]
+    reviews(user_id: ID!): [Reivew]
     messages(event_id: ID!): [Message]
     matches(user_id: ID!): [Match]
     lastEvent(author_id: ID!): Event

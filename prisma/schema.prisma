@@ -24,6 +24,8 @@ model User {
   events      Event[]
   matches     Match[]
   messages    Message[]
+  writtenReviews Review[] @relation("WrittenReviews")
+  recievedReviews Review[] @relation("RecievedReviews")
 }
 
 model Event {
@@ -58,4 +60,15 @@ model Match {
   event       Event @relation(fields: [event_id], references: [id], onDelete: Cascade)
   event_id    String
   accepted    Boolean @default(false)
+}
+
+model Review {
+  id          String @id @default(uuid())
+  time        DateTime @default(now())
+  text        String
+  stars       Int
+  author      User @relation("WrittenReviews", fields: [author_id], references: [id])
+  author_id   String
+  user        User @relation("RecievedReviews", fields: [user_id], references: [id], onDelete: Cascade)
+  user_id     String
 }

@@ -99,6 +99,20 @@ const graphQLServer = createServer({
           })
           return messages
         },
+        reviews: async (_, { user_id }, { prisma } ) => {
+          const reviews = await prisma.review.findMany({
+            where: {
+              user_id
+            },
+            orderBy: {
+              time: 'asc',
+            },
+            include: {
+              author: true
+            }
+          })
+          return reviews
+        },
         lastEvent: async (_, { author_id }, { prisma } ) => {
           const time = new Date()
           time.setHours(0,0,0,0)
