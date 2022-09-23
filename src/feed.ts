@@ -2,7 +2,7 @@ import express from 'express'
 import NodeCache from 'node-cache';
 
 const router = express.Router()
-const cache = new NodeCache({ stdTTL: 300 }) // default time-to-live 5 min
+const cache = new NodeCache({ stdTTL: 180 }) // default time-to-live 3 min
 
 interface Event {
   id:         string,
