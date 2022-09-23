@@ -161,7 +161,7 @@ const graphQLServer = createServer({
           pubSub.publish('newMessages', message)
           return message
         },
-        postReview: async (_, { text, stars, author_id, user_id }, { pubSub, prisma } ) => {
+        postReview: async (_, { text, stars, author_id, user_id }, { prisma } ) => {
           const review = await prisma.review.create({
             data: {
               text,

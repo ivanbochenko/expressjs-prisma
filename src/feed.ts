@@ -4,7 +4,7 @@ import NodeCache from 'node-cache';
 const router = express.Router()
 const cache = new NodeCache({ stdTTL: 300 }) // default time-to-live 5 min
 
-type Event = {
+interface Event {
   id:         string,
   author_id:  string,
   title:      string,
@@ -24,8 +24,8 @@ router.post('/', async (req, res) => {
 
     // try to get data from cache
     let cachedEvents: any = cache.get('events');
-    if (cachedEvents == null) {
-      // Query events not older than todays midnight
+    if (!cachedEvents) {
+      // Select and cache events with matches and author not older than todays midnight
       const date = new Date()
       date.setHours(0,0,0,0)
       const events = await prisma.event.findMany({
@@ -36,10 +36,7 @@ router.post('/', async (req, res) => {
         },
         include: {
           matches: {
-            where: {
-              accepted: true
-            },
-            select: {
+            include: {
               user: {
                 select: {
                   id: true,
@@ -63,7 +60,10 @@ router.post('/', async (req, res) => {
     }
     // Exclude user's own and swiped events, sort them by distance and return list of 20 closest
     const closestEvents = cachedEvents
-      .filter((event: any) => (event.author_id !== id && !event.matches.some((m: any) => m.user?.id === id)))
+      .filter((event: any) => (
+        (!event.matches.some((m: any) => m.user?.id === id)) &&
+        (event.author_id !== id)
+      ))
       .map((event: Event) => ({
         ...event,
         distance: Math.round(getDistance(
@@ -75,6 +75,7 @@ router.post('/', async (req, res) => {
       }))
       .sort((a: Event, b: Event ) => a.distance - b.distance)
       .slice(0, 20)
+      .map((e: Event) => ({...e, matches: e.matches.filter( (m: any) => m.accepted === true)}))
       
     res.status(200).json(closestEvents);
   } catch (error) {
