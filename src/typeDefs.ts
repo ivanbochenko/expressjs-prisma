@@ -85,7 +85,6 @@ const typeDefs = `
   type Subscription {
     messages(event_id: ID!): Message!
   }
-
 `
 
 export default typeDefs
