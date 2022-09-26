@@ -8,6 +8,7 @@ const typeDefs = `
     bio:        String
     avatar:     String
     age:        Int
+    stars:      Int
     sex:        String
     messages:   [Message]
   }

@@ -175,6 +175,22 @@ const graphQLServer = createServer({
               author: true
             }
           })
+          const reviews = await prisma.review.findMany({
+            where: {
+              user_id
+            }
+          })
+          const starsArr = reviews.map(r => r.stars)
+          const sum = starsArr.reduce((a, b) => a + b, 0)
+          const avg = Math.round(sum / starsArr.length) || 0
+          const user = await prisma.user.update({
+            where: {
+              id: user_id
+            },
+            data: {
+              stars: avg
+            }
+          })
           return review
         },
         postEvent: async (_, { author_id, photo, title, text, slots, time, latitude, longitude }, { prisma } ) => {
