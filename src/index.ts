@@ -230,7 +230,6 @@ const graphQLServer = createServer({
               event_id
             }
           })
-          // pubSub.publish('newMatches', match)
           return match
         },
         acceptMatch: async (_, { id }, { prisma, pubSub } ) => {
@@ -242,7 +241,6 @@ const graphQLServer = createServer({
               accepted: true
             },
           })
-          // pubSub.publish('newMatches', match)
           return match
         }
       },
