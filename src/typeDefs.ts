@@ -84,7 +84,6 @@ const typeDefs = `
 
   type Subscription {
     messages(event_id: ID!): Message!
-    matches(event_id: ID!): Match!
   }
 
 `
