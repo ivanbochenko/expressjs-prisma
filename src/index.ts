@@ -241,7 +241,7 @@ const graphQLServer = createServer({
               }
             }
           })
-          pubSub.publish('newMatches', match)
+          // pubSub.publish('newMatches', match)
           return match
         },
         editMatch: async (_, { id }, { prisma, pubSub } ) => {
@@ -269,14 +269,14 @@ const graphQLServer = createServer({
             ),
           resolve: (value) => value
         },
-        matches: {
-          subscribe: async (_, { event_id }, { pubSub } ) => 
-            pipe(
-              pubSub.subscribe('newMatches'),
-              filter(payload => payload.event_id == event_id)
-            ),
-          resolve: (value) => value
-        },
+        // matches: {
+        //   subscribe: async (_, { event_id }, { pubSub } ) => 
+        //     pipe(
+        //       pubSub.subscribe('newMatches'),
+        //       filter(payload => payload.event_id == event_id)
+        //     ),
+        //   resolve: (value) => value
+        // },
       },
     },
   },
