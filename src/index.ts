@@ -233,7 +233,7 @@ const graphQLServer = createServer({
           // pubSub.publish('newMatches', match)
           return match
         },
-        editMatch: async (_, { id }, { prisma, pubSub } ) => {
+        acceptMatch: async (_, { id }, { prisma, pubSub } ) => {
           const match = await prisma.match.update({
             where: {
               id
