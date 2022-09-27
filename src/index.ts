@@ -164,15 +164,23 @@ const graphQLServer = createServer({
           return message
         },
         postReview: async (_, { text, stars, author_id, user_id }, { prisma } ) => {
+          const time = new Date()
+          time.setHours(0,0,0,0)
+          const check = await prisma.review.findFirst({
+            where: {
+              author_id,
+              time: {
+                gt: time
+              }
+            }
+          })
+          if (check) return new Error('Oops!')
           const review = await prisma.review.create({
             data: {
               text,
               stars,
               author_id,
               user_id,
-            },
-            include: {
-              author: true
             }
           })
           const reviews = await prisma.review.findMany({
