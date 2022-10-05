@@ -80,6 +80,7 @@ const typeDefs = `
     editUser(id: ID!, name: String!, age: Int!, sex: String!, bio: String, avatar: String): User!
     createMatch(user_id: ID!, event_id: ID!): Match!
     acceptMatch(id: ID!): Match!
+    deleteMatch(id: ID!): Match!
   }
 
   type Subscription {

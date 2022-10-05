@@ -250,7 +250,11 @@ const graphQLServer = createServer({
             },
           })
           return match
-        }
+        },
+        deleteMatch: async (_, { id }, { prisma } ) => {
+          const match = await prisma.match.delete({ where: {id} })
+          return match
+        },
       },
 
       // Use pipe to filter messages by id of event you are subscribing to
