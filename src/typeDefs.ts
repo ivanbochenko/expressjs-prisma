@@ -77,6 +77,7 @@ const typeDefs = `
       latitude:  Float!,
       longitude: Float!
     ): Event!
+    deleteEvent(id: ID!): Event!
     editUser(id: ID!, name: String!, age: Int!, sex: String!, bio: String, avatar: String): User!
     createMatch(user_id: ID!, event_id: ID!): Match!
     acceptMatch(id: ID!): Match!

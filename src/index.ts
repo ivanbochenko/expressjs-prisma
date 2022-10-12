@@ -216,6 +216,10 @@ const graphQLServer = createServer({
           })
           return event
         },
+        deleteEvent: async (_, { id }, { prisma } ) => {
+          const event = await prisma.event.delete({ where: { id } })
+          return event
+        },
         editUser: async (_, { id, name, age, sex, bio, avatar }, { prisma } ) => {
           const user = await prisma.user.update({
             where: {
