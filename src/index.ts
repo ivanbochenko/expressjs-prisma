@@ -295,8 +295,7 @@ const port = process.env.PORT || 3000
 app.use(express.json())
 app.use(express.raw({ type: "application/vnd.custom-type" }))
 app.use(express.text({ type: "text/html" }))
-// Access db from routers, prevents creating multiple clients
-app.set('prisma', prisma)
+app.set('prisma', prisma) // Access db from routers
 app.use('/token', tokenRouter)
 app.use('/login', loginRouter)
 app.use('/feed', auth, feedRouter)
