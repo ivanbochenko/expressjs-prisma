@@ -31,7 +31,7 @@ model User {
 
 model Event {
   id          String @id @default(uuid())
-  author      User @relation(fields: [author_id], references: [id])
+  author      User @relation(fields: [author_id], references: [id], onDelete: SetNull)
   author_id   String
   photo       String?
   title       String
@@ -48,7 +48,7 @@ model Message {
   id          String @id @default(uuid())
   time        DateTime @default(now())
   text        String
-  author      User @relation(fields: [author_id], references: [id])
+  author      User @relation(fields: [author_id], references: [id], onDelete: Cascade)
   author_id   String
   event       Event @relation(fields: [event_id], references: [id], onDelete: Cascade)
   event_id    String
@@ -68,7 +68,7 @@ model Review {
   time        DateTime @default(now())
   text        String
   stars       Int
-  author      User @relation("WrittenReviews", fields: [author_id], references: [id])
+  author      User @relation("WrittenReviews", fields: [author_id], references: [id], onDelete: SetNull)
   author_id   String
   user        User @relation("RecievedReviews", fields: [user_id], references: [id], onDelete: Cascade)
   user_id     String

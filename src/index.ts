@@ -235,7 +235,11 @@ const graphQLServer = createServer({
           })
           return user
         },
-        createMatch: async (_, { user_id, event_id }, { prisma, pubSub } ) => {
+        deleteUser: async (_, { id }, { prisma } ) => {
+          const user = await prisma.user.delete({ where: { id } })
+          return user
+        },
+        createMatch: async (_, { user_id, event_id }, { prisma } ) => {
           const match = await prisma.match.create({
             data: {
               user_id,
@@ -244,7 +248,7 @@ const graphQLServer = createServer({
           })
           return match
         },
-        acceptMatch: async (_, { id }, { prisma, pubSub } ) => {
+        acceptMatch: async (_, { id }, { prisma } ) => {
           const match = await prisma.match.update({
             where: {
               id
