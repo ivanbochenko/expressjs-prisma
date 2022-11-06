@@ -5,20 +5,15 @@ import axios from 'axios'
 const router = express.Router()
 
 router.post('/password', async (req, res) => {
-  try {
-    const { name, password } = req.body;
-    if (name === process.env.ADMIN_NAME && password === process.env.ADMIN_PASSWORD) {
-      const token = jwt.sign({
-        id: 1,
-        exp: Math.floor(Date.now() / 1000) + 86400 * 30, // Valid for 30 days
-      }, process.env.JWT_SECRET ?? '', { algorithm: 'HS256' })
-      res.status(200).json({token, id: 1, success: true})
-    } else {
-      res.status(200).json({success: false})
-    }
-  } catch (error) {
-    res.status(500).json(error)
-    console.log(error)
+  const { name, password } = req.body;
+  if (name === process.env.ADMIN_NAME && password === process.env.ADMIN_PASSWORD) {
+    const token = jwt.sign({
+      id: 1,
+      exp: Math.floor(Date.now() / 1000) + 86400 * 30, // Valid for 30 days
+    }, process.env.JWT_SECRET ?? '', { algorithm: 'HS256' })
+    res.status(200).json({token, id: 1, success: true})
+  } else {
+    res.status(200).json({success: false})
   }
 })
 

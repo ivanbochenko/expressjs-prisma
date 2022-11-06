@@ -3,6 +3,8 @@ import NodeCache from 'node-cache';
 
 const router = express.Router()
 const cache = new NodeCache({ stdTTL: 180 }) // default time-to-live 3 min
+const NUMBER_OF_EVENTS_RETURNED = 20
+const DEFAULT_MAX_DISTANCE = 100
 
 interface Event {
   id:         string,
@@ -58,23 +60,26 @@ router.post('/', async (req, res) => {
       cachedEvents = events
       cache.set('events', events);
     }
-    // Exclude user's own and swiped events, sort them by distance and return list of 20 closest
     const closestEvents = cachedEvents
+      // Exclude user's own and swiped events
       .filter((event: any) => (
         !(event.matches.some((m: any) => m.user?.id === id)) &&
         (event.author_id !== id)
       ))
-      .map((event: Event) => ({
-        ...event,
-        distance: Math.round(getDistance(
+      // Sort events by distance
+      .map((event: Event) => {
+        const distance = Math.round(getDistance(
           location.latitude, 
           location.longitude, 
           event.latitude, 
           event.longitude
         ))
-      }))
+        return {...event, distance}
+      })
       .sort((a: Event, b: Event ) => a.distance - b.distance)
-      .slice(0, 20)
+      // Return closest
+      .slice(0, NUMBER_OF_EVENTS_RETURNED)
+      // Filter users accepted in event
       .map((e: Event) => ({...e, matches: e.matches.filter( (m: any) => m.accepted === true)}))
       
     res.status(200).json(closestEvents);
@@ -95,7 +100,7 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
     Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
     Math.sin(dLon/2) * Math.sin(dLon/2)
 
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   const d = R * c; // Distance in km
   return d;
 }
