@@ -295,7 +295,7 @@ const port = process.env.PORT || 3000
 app.use(express.json())
 app.use(express.raw({ type: "application/vnd.custom-type" }))
 app.use(express.text({ type: "text/html" }))
-app.get('/error', async (req, res) => res.status(500))
+app.get('/error', (req, res) => res.status(500).send('Server error'))
 app.set('prisma', prisma) // Access db from routers
 app.use('/token', tokenRouter)
 app.use('/login', loginRouter)
