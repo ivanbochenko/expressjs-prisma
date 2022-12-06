@@ -6,19 +6,6 @@ const cache = new NodeCache({ stdTTL: 180 }) // default time-to-live 3 min
 const NUMBER_OF_EVENTS_RETURNED = 20
 const DEFAULT_MAX_DISTANCE = 100
 
-interface Event {
-  id:         string,
-  author_id:  string,
-  title:      string,
-  text:       string,
-  time:       Date,
-  slots:      number,
-  latitude:   number,
-  longitude:  number,
-  distance:   number,
-  matches: []
-}
-
 router.post('/', async (req, res) => {
   try {
     const { location, id } = req.body
@@ -26,7 +13,7 @@ router.post('/', async (req, res) => {
 
     // try to get data from cache
     let cachedEvents: any = cache.get('events');
-    
+
     if (!cachedEvents) {
       // Select and cache events with matches and author not older than todays midnight
       const events = await prisma.event.findMany(eventsQueryConfig)
@@ -71,6 +58,19 @@ const eventsQueryConfig = {
       }
     }
   }
+}
+
+interface Event {
+  id:         string,
+  author_id:  string,
+  title:      string,
+  text:       string,
+  time:       Date,
+  slots:      number,
+  latitude:   number,
+  longitude:  number,
+  distance:   number,
+  matches: []
 }
 
 const findClosestEvents = (events: any, id: string, location: any) => {
