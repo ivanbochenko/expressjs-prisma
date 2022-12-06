@@ -1,9 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 
-// Authorization
-
-const auth = (req: Request, res: Response, next: NextFunction) => {
+export default (req: Request, res: Response, next: NextFunction) => {
   try {
     const token = req.headers['authorization'] ?? ''
     jwt.verify(token, process.env.JWT_SECRET ?? '')
@@ -13,5 +11,3 @@ const auth = (req: Request, res: Response, next: NextFunction) => {
     console.log(error)
   }
 }
-
-export default auth

@@ -68,7 +68,7 @@ model Review {
   time        DateTime @default(now())
   text        String
   stars       Int
-  author      User @relation("WrittenReviews", fields: [author_id], references: [id], onDelete: SetNull)
+  author      User @relation("WrittenReviews", fields: [author_id], references: [id], onDelete: Cascade)
   author_id   String
   user        User @relation("RecievedReviews", fields: [user_id], references: [id], onDelete: Cascade)
   user_id     String

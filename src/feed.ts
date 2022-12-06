@@ -26,61 +26,15 @@ router.post('/', async (req, res) => {
 
     // try to get data from cache
     let cachedEvents: any = cache.get('events');
+    
     if (!cachedEvents) {
       // Select and cache events with matches and author not older than todays midnight
-      const date = new Date()
-      date.setHours(0,0,0,0)
-      const events = await prisma.event.findMany({
-        where: { 
-          time: {
-            gte: date
-          },
-        },
-        include: {
-          matches: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  avatar: true
-                }
-              }
-            }
-          },
-          author: {
-            select: {
-              id: true,
-              name: true,
-              avatar: true
-            }
-          }
-        }
-      })
+      const events = await prisma.event.findMany(eventsQueryConfig)
       cachedEvents = events
       cache.set('events', events);
     }
-    const closestEvents = cachedEvents
-      // Exclude user's own and swiped events
-      .filter((event: any) => (
-        !(event.matches.some((m: any) => m.user?.id === id)) &&
-        (event.author_id !== id)
-      ))
-      // Sort events by distance
-      .map((event: Event) => {
-        const distance = Math.round(getDistance(
-          location.latitude, 
-          location.longitude, 
-          event.latitude, 
-          event.longitude
-        ))
-        return {...event, distance}
-      })
-      .sort((a: Event, b: Event ) => a.distance - b.distance)
-      // Return closest
-      .slice(0, NUMBER_OF_EVENTS_RETURNED)
-      // Filter users accepted in event
-      .map((e: Event) => ({...e, matches: e.matches.filter( (m: any) => m.accepted === true)}))
+
+    const closestEvents = findClosestEvents(cachedEvents, id, location)
       
     res.status(200).json(closestEvents);
   } catch (error) {
@@ -90,6 +44,59 @@ router.post('/', async (req, res) => {
 })
 
 export default router;
+
+const eventsQueryConfig = {
+  where: { 
+    time: {
+      gte: new Date().setHours(0,0,0,0)
+    },
+  },
+  include: {
+    matches: {
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true
+          }
+        }
+      }
+    },
+    author: {
+      select: {
+        id: true,
+        name: true,
+        avatar: true
+      }
+    }
+  }
+}
+
+const findClosestEvents = (events: any, id: string, location: any) => {
+  // Exclude user's own and swiped events
+  const closestEvents = events.filter((event: any) => (
+    !(event.matches.some((m: any) => m.user?.id === id)) &&
+    (event.author_id !== id)
+  ))
+  // Sort events by distance
+  .map((event: Event) => {
+    const distance = Math.round(getDistance(
+      location.latitude, 
+      location.longitude, 
+      event.latitude, 
+      event.longitude
+    ))
+    return {...event, distance}
+  })
+  .sort((a: Event, b: Event ) => a.distance - b.distance)
+  // Return closest
+  .slice(0, NUMBER_OF_EVENTS_RETURNED)
+  // Filter users accepted in event
+  .map((e: Event) => ({...e, matches: e.matches.filter( (m: any) => m.accepted === true)}))
+
+  return closestEvents
+}
 
 function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
   const R = 6371; // Radius of the earth in km
