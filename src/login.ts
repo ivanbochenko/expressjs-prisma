@@ -64,6 +64,15 @@ router.post('/facebook', async (req, res) => {
   }
 })
 
+// For development
+
+// router.get('/newToken', async (req, res) => {
+//   const newToken = jwt.sign({
+//     exp: Math.floor(Date.now() / 1000) + 86400 * 30,
+//   }, secret )
+//   res.status(200).json({token: newToken})
+// })
+
 export default router;
 
 const getFacebookEmail = async (code: string, verifier: string) => {

@@ -14,15 +14,17 @@ const port = process.env.PORT || 3000
 app.use(express.json())
 app.use(express.raw({ type: "application/vnd.custom-type" }))
 app.use(express.text({ type: "text/html" }))
-app.get('/error', (req, res) => {
-  console.log(`Error`)
-  res.status(500).send('Server error')
-})
+
 app.set('prisma', prisma) // Access db from routers
 app.use('/login', loginRouter)
 app.use('/feed', auth, feedRouter)
 app.use('/s3url', auth, s3urlRouter)
-app.use('/graphql', graphQLServer)
+app.use('/graphql', auth, graphQLServer)
+
+app.get('/error', (req, res) => {
+  console.log(`Error`)
+  res.status(500).send('Server error')
+})
 
 app.listen(port, () => {
   console.log(`App listening at http://localhost:${port}`)

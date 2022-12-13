@@ -2,7 +2,7 @@ import express from 'express'
 import NodeCache from 'node-cache';
 
 const router = express.Router()
-const cache = new NodeCache({ stdTTL: 180 }) // default time-to-live 3 min
+const cache = new NodeCache({ stdTTL: 60 * 3 }) // default time-to-live 3 min
 const NUMBER_OF_EVENTS_RETURNED = 20
 const DEFAULT_MAX_DISTANCE = 100
 
@@ -10,19 +10,17 @@ router.post('/', async (req, res) => {
   try {
     const { location, id } = req.body
     const prisma = req.app.get('prisma')
-
     // try to get data from cache
     let cachedEvents: any = cache.get('events');
-
     if (!cachedEvents) {
       // Select and cache events with matches and author not older than todays midnight
-      const events = await prisma.event.findMany(eventsQueryConfig)
+      const date = new Date()
+      date.setHours(0,0,0,0)
+      const events = await prisma.event.findMany(eventsQuery(date))
       cachedEvents = events
       cache.set('events', events);
     }
-
     const closestEvents = findClosestEvents(cachedEvents, id, location)
-      
     res.status(200).json(closestEvents);
   } catch (error) {
     console.log(error);
@@ -32,10 +30,10 @@ router.post('/', async (req, res) => {
 
 export default router;
 
-const eventsQueryConfig = {
-  where: { 
+const eventsQuery = (date: Date) => ({
+  where: {
     time: {
-      gte: new Date().setHours(0,0,0,0)
+      gte: date
     },
   },
   include: {
@@ -58,7 +56,7 @@ const eventsQueryConfig = {
       }
     }
   }
-}
+})
 
 interface Event {
   id:         string,
@@ -73,7 +71,12 @@ interface Event {
   matches: []
 }
 
-const findClosestEvents = (events: any, id: string, location: any) => {
+interface Location {
+  latitude: number,
+  longitude: number
+}
+
+const findClosestEvents = (events: Event[], id: string, location: Location) => {
   // Exclude user's own and swiped events
   const closestEvents = events.filter((event: any) => (
     !(event.matches.some((m: any) => m.user?.id === id)) &&
