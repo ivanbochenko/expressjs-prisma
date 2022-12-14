@@ -1,6 +1,5 @@
-import { createServer, createPubSub, pipe, filter } from '@graphql-yoga/node';
-import { PrismaClient } from "@prisma/client";
-import typeDefs from './typeDefs'
+import { createServer, createPubSub, pipe, filter } from '@graphql-yoga/node'
+import { PrismaClient } from "@prisma/client"
 
 const pubSub = createPubSub()
 
@@ -10,7 +9,6 @@ export default createServer({
   maskedErrors: false,
   context: { pubSub, db: prisma },
   schema: {
-    typeDefs,
     resolvers: {
       Query: {
         user: async (_, { id }, { db } ) => {
@@ -268,5 +266,97 @@ export default createServer({
         },
       },
     },
+    typeDefs: `
+    
+      type User {
+        id:         ID!
+        created_at: DateTime!
+        email:      String
+        phone:      String
+        name:       String
+        bio:        String
+        avatar:     String
+        age:        Int
+        stars:      Int
+        sex:        String
+        messages:   [Message]
+      }
+    
+      type Event {
+        id:         ID!
+        author_id:  ID!
+        photo:      String!
+        title:      String!
+        text:       String
+        slots:      Int
+        time:       DateTime!
+        latitude:   Float
+        longitude:  Float
+        matches:    [Match]
+        author:     User
+      }
+    
+      type Message {
+        id:         ID!
+        text:       String!
+        time:       DateTime!
+        author:     User!
+      }
+    
+      type Match {
+        id:         ID!
+        user_id:    ID!
+        event_id:   ID!
+        accepted:   Boolean
+        event:      Event!
+        user:       User!
+      }
+    
+      type Review {
+        id:         ID!
+        text:       String!
+        time:       DateTime!
+        stars:      Int!
+        author:     User!
+        user:       User!
+      }
+    
+      scalar DateTime
+    
+      type Query {
+        user(id: ID!):                User
+        event(id: ID!):               Event
+        events(author_id: ID!):       [Event]
+        reviews(user_id: ID!):        [Review]
+        messages(event_id: ID!):      [Message]
+        matches(user_id: ID!):        [Match]
+        lastEvent(author_id: ID!):    Event
+      }
+    
+      type Mutation {
+        postMessage(author_id: ID!, event_id: ID!, text: String!): Message!
+        postReview(author_id: ID!, user_id: ID!, text: String!, stars: Int!): Review!
+        postEvent(
+          author_id: ID!,
+          photo:     String!,
+          title:     String!,
+          text:      String!,
+          slots:     Int!,
+          time:      DateTime,
+          latitude:  Float!,
+          longitude: Float!
+        ): Event!
+        deleteEvent(id: ID!): Event!
+        editUser(id: ID!, name: String!, age: Int!, sex: String!, bio: String, avatar: String): User!
+        deleteUser(id: ID!): User
+        createMatch(user_id: ID!, event_id: ID!): Match!
+        acceptMatch(id: ID!): Match!
+        deleteMatch(id: ID!): Match!
+      }
+    
+      type Subscription {
+        messages(event_id: ID!): Message!
+      }
+    `
   },
 })
