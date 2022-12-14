@@ -11,7 +11,7 @@ router.post('/', async (req, res) => {
     const { location, id } = req.body
     const prisma = req.app.get('prisma')
     // try to get data from cache
-    let cachedEvents: any = cache.get('events');
+    let cachedEvents: any = cache.get('events')
     if (!cachedEvents) {
       // Select and cache events with matches and author not older than todays midnight
       const date = new Date()
