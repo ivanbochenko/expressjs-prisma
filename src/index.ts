@@ -2,7 +2,7 @@ import express from "express"
 import cors from 'cors'
 import { PrismaClient } from "@prisma/client"
 import { auth, generateUploadURL } from './utils'
-import graphQLServer from './graphQLServer'
+import { graphQLServer } from './graphQLServer'
 import loginRouter from './login'
 import feedRouter from './feed'
 

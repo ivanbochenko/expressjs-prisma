@@ -5,7 +5,7 @@ const pubSub = createPubSub()
 
 const prisma = new PrismaClient()
 
-export default createServer({
+export const graphQLServer = createServer({
   maskedErrors: false,
   context: { pubSub, db: prisma },
   schema: {
@@ -267,7 +267,7 @@ export default createServer({
       },
     },
     typeDefs: `
-    
+
       type User {
         id:         ID!
         created_at: DateTime!
