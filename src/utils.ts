@@ -10,9 +10,14 @@ export const auth = (req: Request, res: Response, next: NextFunction) => {
     jwt.verify(token, process.env.JWT_SECRET ?? '')
     next()
   } catch (error) {
-    res.status(401).json({ message: 'Authorization error' })
-    console.log(error)
+    res.status(401).json('Authorization error')
+    console.error(error)
   }
+}
+
+export const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
+  console.error(err.stack)
+  res.status(500).send('Server error')
 }
 
 export const generateUploadURL = async () => {

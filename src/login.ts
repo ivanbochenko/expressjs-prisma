@@ -7,22 +7,17 @@ const router = express.Router()
 const secret = process.env.JWT_SECRET ?? ''
 
 router.post('/token', async (req, res) => {
-  try {
-    if (!req.body.token) return res.json( null );
-    const { token } = req.body;
-    const { id, phone }: any = jwt.verify(token, secret);
-    // Refresh JWT
-    const newToken = jwt.sign({
-      id,
-      phone,
-      exp: Math.floor(Date.now() / 1000) + 86400 * 30, // Valid for 30 days
-    }, secret )
-    // send JWT in response to the client
-    res.status(200).json({token: newToken, id: id});
-  } catch (error) {
-    console.log(error)
-    res.status(500).json(error);
-  }
+  if (!req.body.token) return res.json( null );
+  const { token } = req.body;
+  const { id, phone }: any = jwt.verify(token, secret);
+  // Refresh JWT
+  const newToken = jwt.sign({
+    id,
+    phone,
+    exp: Math.floor(Date.now() / 1000) + 86400 * 30, // Valid for 30 days
+  }, secret )
+  // send JWT in response to the client
+  res.status(200).json({token: newToken, id: id})
 })
 
 router.post('/password', async (req, res) => {
@@ -41,27 +36,22 @@ router.post('/password', async (req, res) => {
 // Create new user with facebook email
 
 router.post('/facebook', async (req, res) => {
-  try {
-    const prisma = req.app.get('prisma')
-    const { code, verifier } = req.body;
-    const email = await getFacebookEmail(code, verifier)
-    const user = await prisma.user.upsert({
-      where: { email },
-      update: { email },
-      create: { email },
-    })
-    const id = user.id
-    // Create JWT
-    const token = jwt.sign({
-      id,
-      email,
-      exp: Math.floor(Date.now() / 1000) + 86400 * 30, // Valid for 30 days
-    }, process.env.JWT_SECRET ?? '', { algorithm: 'HS256' })
-    res.status(200).json({token, id})
-  } catch (error) {
-    res.status(500).json(error)
-    console.log(error)
-  }
+  const db = req.app.get('db')
+  const { code, verifier } = req.body;
+  const email = await getFacebookEmail(code, verifier)
+  const user = await db.user.upsert({
+    where: { email },
+    update: { email },
+    create: { email },
+  })
+  const id = user.id
+  // Create JWT
+  const token = jwt.sign({
+    id,
+    email,
+    exp: Math.floor(Date.now() / 1000) + 86400 * 30, // Valid for 30 days
+  }, process.env.JWT_SECRET ?? '', { algorithm: 'HS256' })
+  res.status(200).json({token, id})
 })
 
 // For development

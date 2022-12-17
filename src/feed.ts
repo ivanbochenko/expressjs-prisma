@@ -7,25 +7,20 @@ const NUMBER_OF_EVENTS_RETURNED = 20
 const DEFAULT_MAX_DISTANCE = 100
 
 router.post('/', async (req, res) => {
-  try {
-    const { location, id } = req.body
-    const prisma = req.app.get('prisma')
-    // try to get data from cache
-    let cachedEvents: any = cache.get('events')
-    if (!cachedEvents) {
-      // Select and cache events with matches and author not older than todays midnight
-      const date = new Date()
-      date.setHours(0,0,0,0)
-      const events = await prisma.event.findMany(eventsQuery(date))
-      cachedEvents = events
-      cache.set('events', events);
-    }
-    const closestEvents = findClosestEvents(cachedEvents, id, location)
-    res.status(200).json(closestEvents);
-  } catch (error) {
-    console.log(error);
-    res.status(500).json(null);
+  const { location, id } = req.body
+  const db = req.app.get('db')
+  // try to get data from cache
+  let cachedEvents: any = cache.get('events')
+  if (!cachedEvents) {
+    // Select and cache events with matches and author not older than todays midnight
+    const date = new Date()
+    date.setHours(0,0,0,0)
+    const events = await db.event.findMany(eventsQuery(date))
+    cachedEvents = events
+    cache.set('events', events);
   }
+  const closestEvents = findClosestEvents(cachedEvents, id, location)
+  res.status(200).json(closestEvents)
 })
 
 export default router;
@@ -58,7 +53,7 @@ const eventsQuery = (date: Date) => ({
   }
 })
 
-interface Event {
+type Event = {
   id:         string,
   author_id:  string,
   title:      string,
@@ -71,18 +66,19 @@ interface Event {
   matches: []
 }
 
-interface Location {
+type Location = {
   latitude: number,
   longitude: number
 }
 
-const findClosestEvents = (events: Event[], id: string, location: Location) => {
+const findClosestEvents = (events: Event[], id: string, location: Location) => (
+  events
   // Exclude user's own and swiped events
-  const closestEvents = events.filter((event: any) => (
+  .filter((event: any) => (
     !(event.matches.some((m: any) => m.user?.id === id)) &&
     (event.author_id !== id)
   ))
-  // Sort events by distance
+  // Calculate distance to events
   .map((event: Event) => {
     const distance = Math.round(getDistance(
       location.latitude, 
@@ -92,14 +88,13 @@ const findClosestEvents = (events: Event[], id: string, location: Location) => {
     ))
     return {...event, distance}
   })
+  // Sort events by distance
   .sort((a: Event, b: Event ) => a.distance - b.distance)
   // Return closest
   .slice(0, NUMBER_OF_EVENTS_RETURNED)
   // Filter users accepted in event
   .map((e: Event) => ({...e, matches: e.matches.filter( (m: any) => m.accepted === true)}))
-
-  return closestEvents
-}
+)
 
 function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
   const R = 6371; // Radius of the earth in km
@@ -110,11 +105,8 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
     Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
     Math.sin(dLon/2) * Math.sin(dLon/2)
 
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  const d = R * c; // Distance in km
-  return d;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+  return R * c; // Distance in km
 }
 
-function deg2rad(deg: number) {
-  return deg * (Math.PI/180)
-}
+const deg2rad = (deg: number) => deg * (Math.PI/180)

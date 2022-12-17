@@ -1,7 +1,7 @@
 import express from "express"
 import cors from 'cors'
 import { PrismaClient } from "@prisma/client"
-import { auth, generateUploadURL } from './utils'
+import { auth, errorHandler, generateUploadURL } from './utils'
 import { graphQLServer } from './graphQLServer'
 import loginRouter from './login'
 import feedRouter from './feed'
@@ -14,8 +14,7 @@ app.use(cors())
 app.use(express.json())
 app.use(express.raw({ type: "application/vnd.custom-type" }))
 app.use(express.text({ type: "text/html" }))
-
-app.set('prisma', prisma) // Access db from routers
+app.set('db', prisma) // Access db from routers
 
 app.use('/login', loginRouter)
 app.use('/feed', auth, feedRouter)
@@ -26,10 +25,15 @@ app.get('/s3url', auth, async (req, res) => {
   res.status(200).json(url)
 })
 
-app.get('/error', (req, res) => {
-  console.log(`Error`)
-  res.status(500).send('Server error')
+app.get('/', async (req, res) => {
+  res.status(200).send('Hello!')
 })
+
+app.get('/error', (req, res) => {
+  throw new Error('Server error')
+})
+
+app.use(errorHandler)
 
 app.listen(port, () => {
   console.log(`App listening at http://localhost:${port}`)
