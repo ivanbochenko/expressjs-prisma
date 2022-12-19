@@ -30,7 +30,9 @@ app.get('/', async (req, res) => {
 })
 
 app.get('/error', (req, res) => {
-  throw new Error('Server error')
+  const errorData = req.body
+  console.log(errorData)
+  res.status(200)  
 })
 
 app.use(errorHandler)
