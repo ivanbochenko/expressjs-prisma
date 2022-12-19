@@ -29,7 +29,7 @@ app.get('/', async (req, res) => {
   res.status(200).send('Hello!')
 })
 
-app.get('/error', (req, res) => {
+app.post('/error', (req, res) => {
   const errorData = req.body
   console.log(errorData)
   res.status(200)  
