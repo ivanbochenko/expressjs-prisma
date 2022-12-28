@@ -179,12 +179,14 @@ export const graphQLServer = createServer({
           const starsArr = reviews.map(r => r.stars)
           const sum = starsArr.reduce((a, b) => a + b, 0)
           const avg = Math.round(sum / starsArr.length) || 0
+          const rating = Math.round((sum / starsArr.length) / 2.5 * starsArr.length)
           await db.user.update({
             where: {
               id: user_id
             },
             data: {
-              stars: avg
+              stars: avg,
+              rating
             }
           })
           return review

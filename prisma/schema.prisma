@@ -20,6 +20,7 @@ model User {
   avatar      String?
   age         Int?
   stars       Int?
+  rating      Int?
   sex         String?
   events      Event[]
   matches     Match[]
