@@ -5,47 +5,39 @@ const router = express.Router()
 const cache = new NodeCache({ stdTTL: 60 * 3 }) // default time-to-live 3 min
 
 router.post('/', async (req, res) => {
-  const { location, id, maxDistance } = req.body
   const db = req.app.get('db')
+  const { location, id, maxDistance } = req.body
   // try to get data from cache
   let cachedEvents: any = cache.get('events')
+  // Select and cache events with matches and author not older than todays midnight sorted by authors rating
   if (!cachedEvents) {
-    // Select and cache events with matches and author not older than todays midnight
     const date = new Date()
     date.setHours(0,0,0,0)
     const events = await db.event.findMany(eventsQuery(date))
     cachedEvents = events
     cache.set('events', events);
   }
-  const events = findEvents(cachedEvents, id, location, maxDistance)
-  res.status(200).json(events)
+  // Calculate distance to events
+  const closeEvents = cachedEvents
+    .map((event: Event) => {
+      const distance = Math.round(getDistance(
+        location.latitude, 
+        location.longitude, 
+        event.latitude, 
+        event.longitude
+      ))
+      return {...event, distance}
+    })
+    .filter((event: Event) => event.distance <= maxDistance)
+  // Exclude user's own and swiped events
+  const newEvents = closeEvents.filter((event: Event) => (
+    (event?.author_id !== id) &&
+    !(event?.matches.some((m: any) => m.user?.id === id))
+  ))
+  res.status(200).json(newEvents)
 })
 
-export default router;
-
-
-const findEvents = (events: Event[], id: string, location: Location, maxDistance: number) => (
-  events
-  // Calculate distance to events
-  .map((event: Event) => {
-    const distance = Math.round(getDistance(
-      location.latitude, 
-      location.longitude, 
-      event.latitude, 
-      event.longitude
-    ))
-    if (distance < maxDistance) {
-      return {...event, distance}
-    }
-  })
-  // Sort events by authors rating
-  .sort((a: any, b: any ) => a.author.rating - b.author.rating)
-  // Exclude user's own and swiped events
-  .filter((event: any) => (
-    !(event.matches.some((m: any) => m.user?.id === id)) &&
-    (event.author_id !== id)
-  ))
-)
+export default router
 
 function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
   const deg2rad = (deg: number) => deg * (Math.PI/180)
@@ -67,6 +59,11 @@ const eventsQuery = (date: Date) => ({
       gte: date
     },
   },
+  orderBy: {
+    author: {
+      rating: 'desc'
+    }
+  },
   include: {
     matches: {
       where: {
@@ -87,8 +84,7 @@ const eventsQuery = (date: Date) => ({
         id: true,
         name: true,
         avatar: true,
-        stars: true,
-        rating: true
+        stars: true
       }
     }
   }
