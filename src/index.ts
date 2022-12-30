@@ -25,10 +25,7 @@ app.get('/s3url', auth, async (req, res) => {
   res.status(200).json(url)
 })
 
-app.get('/', async (req, res) => {
-  // await prisma.event.createMany({
-  //   data: 
-  // })
+app.get('/', (req, res) => {
   res.status(200).send('Hello!')
 })
 

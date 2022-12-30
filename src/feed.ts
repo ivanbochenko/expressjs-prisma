@@ -3,10 +3,9 @@ import NodeCache from 'node-cache';
 
 const router = express.Router()
 const cache = new NodeCache({ stdTTL: 60 * 3 }) // default time-to-live 3 min
-const DEFAULT_MAX_DISTANCE = 100
 
 router.post('/', async (req, res) => {
-  const { location, id, maxDistance = DEFAULT_MAX_DISTANCE } = req.body
+  const { location, id, maxDistance } = req.body
   const db = req.app.get('db')
   // try to get data from cache
   let cachedEvents: any = cache.get('events')
