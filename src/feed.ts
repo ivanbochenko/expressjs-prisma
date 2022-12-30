@@ -9,7 +9,9 @@ router.post('/', async (req, res) => {
   const { location, id, maxDistance } = req.body
   // try to get data from cache
   let cachedEvents: any = cache.get('events')
-  // Select and cache events with matches and author not older than todays midnight sorted by authors rating
+  // Select and cache events with matches and author, 
+  // not older than todays midnight,
+  // sorted by authors rating.
   if (!cachedEvents) {
     const date = new Date()
     date.setHours(0,0,0,0)
