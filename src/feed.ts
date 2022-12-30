@@ -13,9 +13,7 @@ router.post('/', async (req, res) => {
   // not older than todays midnight,
   // sorted by authors rating.
   if (!cachedEvents) {
-    const date = new Date()
-    date.setHours(0,0,0,0)
-    cachedEvents = await db.event.findMany(eventsQuery(date))
+    cachedEvents = await db.event.findMany(eventsQuery())
     cache.set('events', cachedEvents)
   }
   // Calculate distance to events
@@ -54,42 +52,46 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
   return R * c; // Distance in km
 }
 
-const eventsQuery = (date: Date) => ({
-  where: {
-    time: {
-      gte: date
-    },
-  },
-  orderBy: {
-    author: {
-      rating: 'desc'
-    }
-  },
-  include: {
-    matches: {
-      where: {
-        accepted: true
+const eventsQuery = () => {
+  const date = new Date()
+  date.setHours(0,0,0,0)
+  return ({
+    where: {
+      time: {
+        gte: date
       },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true
+    },
+    orderBy: {
+      author: {
+        rating: 'desc'
+      }
+    },
+    include: {
+      matches: {
+        where: {
+          accepted: true
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true
+            }
           }
         }
-      }
-    },
-    author: {
-      select: {
-        id: true,
-        name: true,
-        avatar: true,
-        stars: true
+      },
+      author: {
+        select: {
+          id: true,
+          name: true,
+          avatar: true,
+          stars: true
+        }
       }
     }
-  }
-})
+  })
+}
 
 type Event = {
   id:         string,
