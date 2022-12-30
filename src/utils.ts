@@ -15,11 +15,6 @@ export const auth = (req: Request, res: Response, next: NextFunction) => {
   }
 }
 
-export const errorHandler = (err: any, req: Request, res: Response) => {
-  console.error(err.stack)
-  res.status(500).send('Server error')
-}
-
 export const generateUploadURL = async () => {
   const s3 = new aws.S3({
     region: "eu-central-1",

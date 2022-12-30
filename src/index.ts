@@ -1,7 +1,7 @@
 import express from "express"
 import cors from 'cors'
 import { PrismaClient } from "@prisma/client"
-import { auth, errorHandler, generateUploadURL } from './utils'
+import { auth, generateUploadURL } from './utils'
 import { graphQLServer } from './graphQLServer'
 import loginRouter from './login'
 import feedRouter from './feed'
@@ -28,14 +28,6 @@ app.get('/s3url', auth, async (req, res) => {
 app.get('/', (req, res) => {
   res.status(200).send('Hello!')
 })
-
-app.post('/error', (req, res) => {
-  const errorData = req.body
-  console.log(errorData)
-  res.status(200)
-})
-
-app.use(errorHandler)
 
 app.listen(port, () => {
   console.log(`App listening at http://localhost:${port}`)
