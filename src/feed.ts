@@ -13,9 +13,8 @@ router.post('/', async (req, res) => {
   if (!cachedEvents) {
     const date = new Date()
     date.setHours(0,0,0,0)
-    const events = await db.event.findMany(eventsQuery(date))
-    cachedEvents = events
-    cache.set('events', events);
+    cachedEvents = await db.event.findMany(eventsQuery(date))
+    cache.set('events', cachedEvents)
   }
   // Calculate distance to events
   const closeEvents = cachedEvents
