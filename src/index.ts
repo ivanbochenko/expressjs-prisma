@@ -26,13 +26,16 @@ app.get('/s3url', auth, async (req, res) => {
 })
 
 app.get('/', async (req, res) => {
+  // await prisma.event.createMany({
+  //   data: 
+  // })
   res.status(200).send('Hello!')
 })
 
 app.post('/error', (req, res) => {
   const errorData = req.body
   console.log(errorData)
-  res.status(200)  
+  res.status(200)
 })
 
 app.use(errorHandler)
