@@ -25,8 +25,10 @@ app.get('/s3url', auth, async (req, res) => {
   res.status(200).json(url)
 })
 
-app.get('/', (req, res) => {
-  res.status(200).send('Hello!')
+app.post('/error', (req, res) => {
+  const { error } = req.body
+  console.log(`Client error: ${error}`)
+  res.status(200)
 })
 
 app.listen(port, () => {
