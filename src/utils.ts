@@ -7,7 +7,9 @@ import { promisify } from "util"
 export const auth = (req: Request, res: Response, next: NextFunction) => {
   try {
     const token = req.headers['authorization'] ?? ''
-    jwt.verify(token, process.env.JWT_SECRET ?? '')
+    const decoded = jwt.verify(token, process.env.JWT_SECRET ?? '')
+    const { id, email }: any = decoded
+    res.locals.user = { id, email }
     next()
   } catch (error) {
     res.status(401).json('Authorization error')

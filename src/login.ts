@@ -6,6 +6,7 @@ import bcrypt from 'bcrypt'
 const router = express.Router()
 
 const secret = process.env.JWT_SECRET ?? ''
+const valid = 30 // Token valid for 30 days
 
 router.post('/token', async (req, res) => {
   const { token } = req.body;
@@ -14,16 +15,11 @@ router.post('/token', async (req, res) => {
   const newToken = jwt.sign({
     id,
     email,
-    exp: Math.floor(Date.now() / 1000) + 86400 * 30, // Valid for 30 days
-  }, secret )
+    exp: getExp()
+  }, secret, { algorithm: 'HS256' } )
   // send JWT in response to the client
   res.status(200).json({token: newToken, id})
 })
-
-// router.post('/createpassword', async (req, res) => {
-  
-//   data.password = bcrypt.hashSync(data.password, 8);
-// })
 
 router.post('/password', async (req, res) => {
   const { email, password } = req.body;
@@ -37,8 +33,8 @@ router.post('/password', async (req, res) => {
     const token = jwt.sign({
       id: user.id,
       email: user.email,
-      exp: Math.floor(Date.now() / 1000) + 86400 * 30, // Valid for 30 days
-    }, process.env.JWT_SECRET ?? '', { algorithm: 'HS256' })
+      exp: getExp() 
+    }, secret, { algorithm: 'HS256' })
     res.status(200).json({token, id: user.id, success: true})
   } else {
     res.status(200).json({success: false})
@@ -61,8 +57,8 @@ router.post('/facebook', async (req, res) => {
   const token = jwt.sign({
     id,
     email,
-    exp: Math.floor(Date.now() / 1000) + 86400 * 30, // Valid for 30 days
-  }, process.env.JWT_SECRET ?? '', { algorithm: 'HS256' })
+    exp: getExp()
+  }, secret, { algorithm: 'HS256' })
   res.status(200).json({token, id})
 })
 
@@ -70,12 +66,21 @@ router.post('/facebook', async (req, res) => {
 
 // router.get('/newToken', async (req, res) => {
 //   const newToken = jwt.sign({
-//     exp: Math.floor(Date.now() / 1000) + 86400 * 30,
+//     exp: getExp()
 //   }, secret )
 //   res.status(200).json({token: newToken})
 // })
 
+// router.get('/newPass', async (req, res) => {
+//   const { password } = req.body;
+
+//   const newPassword = bcrypt.hashSync(password, 8)
+//   res.status(200).json({token: newToken})
+// })
+
 export default router;
+
+const getExp = () => Math.floor(Date.now() / 1000) + 86400 * valid
 
 const getFacebookEmail = async (code: string, verifier: string) => {
   const link = "https://graph.facebook.com/oauth/access_token" +
