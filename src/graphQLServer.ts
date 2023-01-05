@@ -14,8 +14,11 @@ export const graphQLServer = createServer({
         user: async (_, { id }, { db } ) => {
           const user = await db.user.findUnique({
             where: { id },
+            include: {
+              recievedReviews: true
+            }
           })
-          return user
+          return {...user, reviews: user?.recievedReviews}
         },
         event: async (_, { id }, { db } ) => {
           const event = await db.event.findUnique({
@@ -281,6 +284,7 @@ export const graphQLServer = createServer({
         age:        Int
         stars:      Int
         sex:        String
+        reviews:    [Review]
         messages:   [Message]
       }
     

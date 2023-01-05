@@ -10,24 +10,14 @@ router.post('/', async (req, res) => {
   // try to get data from cache
   let cachedEvents: any = cache.get('events')
   // Select and cache events with matches and author, 
-  // not older than todays midnight,
-  // sorted by authors rating.
+  // not older than todays midnight and sorted by authors rating.
   if (!cachedEvents) {
     cachedEvents = await db.event.findMany(eventsQuery())
     cache.set('events', cachedEvents)
   }
   // Calculate distance to events
-  const closeEvents = cachedEvents
-    .map((event: Event) => {
-      const distance = Math.round(getDistance(
-        location.latitude, 
-        location.longitude, 
-        event.latitude, 
-        event.longitude
-      ))
-      return {...event, distance}
-    })
-    .filter((event: Event) => event.distance <= maxDistance)
+  const measuredEvents = measureDistance(cachedEvents, location)
+  const closeEvents = measuredEvents.filter((event: Event) => event.distance <= maxDistance)
   // Exclude user's own and swiped events
   const newEvents = closeEvents.filter((event: Event) => (
     (event?.author_id !== id) &&
@@ -37,6 +27,19 @@ router.post('/', async (req, res) => {
 })
 
 export default router
+
+const measureDistance = (events: Event[], location: Location) => (
+  events.map((event: Event) => 
+    ({...event,
+      distance: Math.round(getDistance(
+        location.latitude, 
+        location.longitude, 
+        event.latitude, 
+        event.longitude
+      ))
+    })
+  )
+)
 
 function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
   const deg2rad = (deg: number) => deg * (Math.PI/180)
