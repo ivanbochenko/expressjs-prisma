@@ -15,7 +15,11 @@ export const graphQLServer = createServer({
           const user = await db.user.findUnique({
             where: { id },
             include: {
-              recievedReviews: true
+              recievedReviews: {
+                include: {
+                  author: true
+                }
+              }
             }
           })
           return {...user, reviews: user?.recievedReviews}
