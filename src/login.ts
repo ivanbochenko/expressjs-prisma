@@ -8,7 +8,7 @@ const router = express.Router()
 const secret = process.env.JWT_SECRET ?? ''
 const valid = 30 // Token valid for 30 days
 
-router.post('/token', async (req, res) => {
+router.post('/token', (req, res) => {
   const { token } = req.body;
   const { id, email }: any = jwt.verify(token, secret);
   // Refresh JWT
@@ -62,19 +62,27 @@ router.post('/facebook', async (req, res) => {
   res.status(200).json({token, id})
 })
 
+router.post('/reset', async (req, res) => {
+  const db = req.app.get('db')
+  const { id }: any = jwt.verify(req.headers['authorization'] ?? '', secret)
+  const password = bcrypt.hashSync(req.body.password, 8)
+  const user = await db.user.update({
+    where: { id },
+    data: {
+      password
+    }
+  })
+  res.status(200).json({succes: true})
+})
+
 // For development
 
 // router.get('/newToken', async (req, res) => {
 //   const newToken = jwt.sign({
+//     id: "1011",
+//     email: "bochenkoivan@gmail.com",
 //     exp: getExp()
 //   }, secret )
-//   res.status(200).json({token: newToken})
-// })
-
-// router.get('/newPass', async (req, res) => {
-//   const { password } = req.body;
-
-//   const newPassword = bcrypt.hashSync(password, 8)
 //   res.status(200).json({token: newToken})
 // })
 

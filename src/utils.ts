@@ -6,9 +6,13 @@ import { promisify } from "util"
 
 export const auth = (req: Request, res: Response, next: NextFunction) => {
   try {
+    if (
+      req.path == '/'       ||
+      req.path == '/login'  ||
+      req.path == '/error'
+    ) return next();
     const token = req.headers['authorization'] ?? ''
-    const decoded = jwt.verify(token, process.env.JWT_SECRET ?? '')
-    const { id, email }: any = decoded
+    const { id, email }: any = jwt.verify(token, process.env.JWT_SECRET ?? '')
     res.locals.user = { id, email }
     next()
   } catch (error) {

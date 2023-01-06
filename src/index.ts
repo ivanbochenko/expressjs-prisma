@@ -17,10 +17,10 @@ app.use(express.text({ type: "text/html" }))
 app.set('db', prisma) // Access db from routers
 
 app.use('/login', loginRouter)
-app.use('/feed', auth, feedRouter)
-app.use('/graphql', auth, graphQLServer)
+app.use('/feed', feedRouter)
+app.use('/graphql', graphQLServer)
 
-app.get('/s3url', auth, async (req, res) => {
+app.get('/s3url', async (req, res) => {
   const url = await generateUploadURL()
   res.status(200).json(url)
 })
@@ -29,6 +29,8 @@ app.post('/error', (req, res) => {
   console.log(`Client error: ${req.body}`)
   res.status(200)
 })
+
+app.all('*', auth);
 
 app.listen(port, () => {
   console.log(`App listening at http://localhost:${port}`)
