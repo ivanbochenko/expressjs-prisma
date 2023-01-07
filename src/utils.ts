@@ -8,8 +8,8 @@ export const auth = (req: Request, res: Response, next: NextFunction) => {
   try {
     if (
       req.path == '/'       ||
-      req.path == '/login'  ||
-      req.path == '/error'
+      req.path == '/error'  ||
+      req.path.startsWith('/login')
     ) return next();
     const token = req.headers['authorization'] ?? ''
     const { id, email }: any = jwt.verify(token, process.env.JWT_SECRET ?? '')
