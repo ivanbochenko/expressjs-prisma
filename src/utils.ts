@@ -34,7 +34,6 @@ export const generateUploadURL = async () => {
     Bucket: "onlyfriends-bucket",
     Key: rawBytes.toString('hex'),
     Expires: 60
-  })  
-  const uploadURL = await s3.getSignedUrlPromise('putObject', params)
-  return uploadURL
+  })
+  return await s3.getSignedUrlPromise('putObject', params)
 }
