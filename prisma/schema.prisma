@@ -19,6 +19,7 @@ model User {
   name        String?
   bio         String?
   avatar      String?
+  token       String?
   age         Int?
   stars       Int?
   rating      Int?

@@ -4,3 +4,5 @@ i am tourist
 looking for tourists
 i am artist 
 looking for artists
+
+push notifications

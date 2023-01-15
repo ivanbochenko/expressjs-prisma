@@ -8,15 +8,26 @@ const router = express.Router()
 const secret = process.env.JWT_SECRET ?? ''
 const valid = 30 // Token valid for 30 days
 
-router.post('/token', (req, res) => {
-  const { token } = req.body;
-  const { id, email }: any = jwt.verify(token, secret);
+router.post('/', async (req, res) => {
+  const { token, pushToken } = req.body;
+  const { id, email, pushToken: prevPushToken }: any = jwt.verify(token, secret);
   // Refresh JWT
   const newToken = jwt.sign({
     id,
     email,
-    exp: getExp()
+    pushToken,
+    exp: getExpirationTime()
   }, secret, { algorithm: 'HS256' } )
+
+  // Update push notifications token
+  const db = req.app.get('db')
+  if (prevPushToken !== pushToken) {
+    const user = await db.user.upsert({
+      where: {id},
+      update: {token: pushToken},
+      create: {token: pushToken},
+    })
+  }
   // send JWT in response to the client
   res.status(200).json({token: newToken, id})
 })
@@ -33,7 +44,7 @@ router.post('/password', async (req, res) => {
     const token = jwt.sign({
       id: user.id,
       email: user.email,
-      exp: getExp() 
+      exp: getExpirationTime() 
     }, secret, { algorithm: 'HS256' })
     res.status(200).json({token, id: user.id, success: true})
   } else {
@@ -57,7 +68,7 @@ router.post('/facebook', async (req, res) => {
   const token = jwt.sign({
     id,
     email,
-    exp: getExp()
+    exp: getExpirationTime()
   }, secret, { algorithm: 'HS256' })
   res.status(200).json({token, id})
 })
@@ -81,14 +92,14 @@ router.post('/reset', async (req, res) => {
 //   const newToken = jwt.sign({
 //     id: "1011",
 //     email: "bochenkoivan@gmail.com",
-//     exp: getExp()
+//     exp: getExpirationTime()
 //   }, secret )
 //   res.status(200).json({token: newToken})
 // })
 
 export default router;
 
-const getExp = () => Math.floor(Date.now() / 1000) + 86400 * valid
+const getExpirationTime = () => Math.floor(Date.now() / 1000) + 86400 * valid
 
 const getFacebookEmail = async (code: string, verifier: string) => {
   const link = "https://graph.facebook.com/oauth/access_token" +
