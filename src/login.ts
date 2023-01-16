@@ -9,8 +9,19 @@ const secret = process.env.JWT_SECRET ?? ''
 const valid = 30 // Token valid for 30 days
 
 router.post('/', async (req, res) => {
-  const { token, pushToken } = req.body;
-  const { id, email, pushToken: prevPushToken }: any = jwt.verify(token, secret);
+  const db = req.app.get('db')
+  const { token, pushToken } = req.body
+  const { id, email, pushToken: prevPushToken }: any = jwt.verify(token, secret)
+
+  // Update push notifications token
+  if (prevPushToken !== pushToken) {
+    const user = await db.user.upsert({
+      where: {id},
+      update: {token: pushToken},
+      create: {token: pushToken},
+    })
+  }
+
   // Refresh JWT
   const newToken = jwt.sign({
     id,
@@ -19,15 +30,6 @@ router.post('/', async (req, res) => {
     exp: getExpirationTime()
   }, secret, { algorithm: 'HS256' } )
 
-  // Update push notifications token
-  const db = req.app.get('db')
-  if (prevPushToken !== pushToken) {
-    const user = await db.user.upsert({
-      where: {id},
-      update: {token: pushToken},
-      create: {token: pushToken},
-    })
-  }
   // send JWT in response to the client
   res.status(200).json({token: newToken, id})
 })
@@ -56,7 +58,7 @@ router.post('/password', async (req, res) => {
 
 router.post('/facebook', async (req, res) => {
   const db = req.app.get('db')
-  const { code, verifier } = req.body;
+  const { code, verifier } = req.body
   const email = await getFacebookEmail(code, verifier)
   const user = await db.user.upsert({
     where: { email },
@@ -96,6 +98,28 @@ router.post('/reset', async (req, res) => {
 //   }, secret )
 //   res.status(200).json({token: newToken})
 // })
+
+router.post('/notification', async (req, res) => {
+  const db = req.app.get('db')
+  const { message, email } = req.body
+  
+  const user = await db.user.findUnique({
+    where: {
+      email
+    }
+  })
+
+  await fetch('https://exp.host/--/api/v2/push/send', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Accept-encoding': 'gzip, deflate',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({...message, to: user.token}),
+  })
+  res.status(200).json({success: true})
+})
 
 export default router;
 
