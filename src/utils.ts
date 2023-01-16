@@ -7,7 +7,6 @@ import { promisify } from "util"
 export const auth = (req: Request, res: Response, next: NextFunction) => {
   try {
     if (
-      req.path == '/'       ||
       req.path == '/error'  ||
       req.path.startsWith('/login')
     ) return next();

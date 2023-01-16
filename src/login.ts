@@ -35,7 +35,7 @@ router.post('/', async (req, res) => {
 })
 
 router.post('/password', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password } = req.body
   const db = req.app.get('db')
   const user = await db.user.findUnique({
     where: {
@@ -58,12 +58,12 @@ router.post('/password', async (req, res) => {
 
 router.post('/facebook', async (req, res) => {
   const db = req.app.get('db')
-  const { code, verifier } = req.body
+  const { code, verifier, pushToken } = req.body
   const email = await getFacebookEmail(code, verifier)
   const user = await db.user.upsert({
     where: { email },
-    update: { email },
-    create: { email },
+    update: { email, token: pushToken },
+    create: { email, token: pushToken },
   })
   const id = user.id
   // Create JWT
@@ -99,43 +99,46 @@ router.post('/reset', async (req, res) => {
 //   res.status(200).json({token: newToken})
 // })
 
-router.post('/notification', async (req, res) => {
-  const db = req.app.get('db')
-  const { message, email } = req.body
+// router.post('/notification', async (req, res) => {
+//   const db = req.app.get('db')
+//   const { message, email } = req.body
   
-  const user = await db.user.findUnique({
-    where: {
-      email
-    }
-  })
+//   const user = await db.user.findUnique({
+//     where: {email}
+//   })
 
-  await fetch('https://exp.host/--/api/v2/push/send', {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Accept-encoding': 'gzip, deflate',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({...message, to: user.token}),
-  })
-  res.status(200).json({success: true})
-})
+//   await fetch('https://exp.host/--/api/v2/push/send', {
+//     method: 'POST',
+//     headers: {
+//       Accept: 'application/json',
+//       'Accept-encoding': 'gzip, deflate',
+//       'Content-Type': 'application/json',
+//     },
+//     body: JSON.stringify({...message, to: user.token}),
+//   })
+//   res.status(200).json({success: true})
+// })
 
 export default router;
 
 const getExpirationTime = () => Math.floor(Date.now() / 1000) + 86400 * valid
 
 const getFacebookEmail = async (code: string, verifier: string) => {
-  const link = "https://graph.facebook.com/oauth/access_token" +
-    "?client_id=" + process.env.FACEBOOK_CLIENT_ID +
-    "&redirect_uri=https://auth.expo.io/@" + process.env.EXPO_SLUG +
-    "&client_secret=" + process.env.FACEBOOK_CLIENT_SECRET +
-    "&grant_type=authorization_code" + 
-    "&code_verifier=" + verifier +
-    "&code=" + code;
+  const baseUrl = 'https://graph.facebook.com'
+  const expoUrl = 'https://auth.expo.io/@'
+  const link = new URL('oauth/access_token', baseUrl)
 
-  const { data: res } = await axios.get(link)
-  const { data } = await axios.post(`https://graph.facebook.com/v14.0/me?fields=email&access_token=${res.access_token}`)
+  link.searchParams.set("client_id", process.env.FACEBOOK_CLIENT_ID ?? '' )
+  link.searchParams.set("redirect_uri", expoUrl + process.env.EXPO_SLUG ?? '' )
+  link.searchParams.set("client_secret", process.env.FACEBOOK_CLIENT_SECRET ?? '' )
+  link.searchParams.set("grant_type", 'authorization_code' )
+  link.searchParams.set("code_verifier", verifier )
+  link.searchParams.set("code", code )
+
+  const { access_token } = (await axios.get(link.toString())).data
+  const { data } = await axios.post(
+    `https://graph.facebook.com/v14.0/me?fields=email&access_token=${access_token}`
+  )
 
   return data.email
 }
