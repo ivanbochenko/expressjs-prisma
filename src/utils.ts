@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import aws from 'aws-sdk'
 import crypto from 'crypto'
 import { promisify } from "util"
+import { Expo, ExpoPushMessage } from 'expo-server-sdk'
 
 export const auth = (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -35,4 +36,38 @@ export const generateUploadURL = async () => {
     Expires: 60
   })
   return await s3.getSignedUrlPromise('putObject', params)
+}
+
+const expo = new Expo()
+
+export const sendPushNotifications = async (somePushTokens: [], message: ExpoPushMessage) => {
+  let messages = []
+  for (const pushToken of somePushTokens) {
+
+    // Check that all your push tokens appear to be valid Expo push tokens
+    if (!Expo.isExpoPushToken(pushToken)) {
+      console.error(`Push token ${pushToken} is not a valid Expo push token`)
+      continue
+    }
+  
+    // Construct a message (see https://docs.expo.io/push-notifications/sending-notifications/)
+    messages.push({
+      ...message,
+      to: pushToken
+    })
+  }
+
+  const chunks = expo.chunkPushNotifications(messages);
+  let tickets = [];
+
+  (async () => {
+    for (const chunk of chunks) {
+      try {
+        const ticketChunk = await expo.sendPushNotificationsAsync(chunk)
+        tickets.push(...ticketChunk)
+      } catch (error) {
+        console.error(error)
+      }
+    }
+  })();
 }
