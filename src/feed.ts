@@ -7,39 +7,30 @@ const cache = new NodeCache({ stdTTL: 60 * 3 }) // default time-to-live 3 min
 router.post('/', async (req, res) => {
   const db = req.app.get('db')
   const { location, id, maxDistance } = req.body
-  // try to get data from cache
+  // Try to get data from cache
   let cachedEvents: any = cache.get('events')
-  // Select and cache events with matches and author, 
-  // not older than todays midnight and sorted by authors rating.
   if (!cachedEvents) {
     cachedEvents = await db.event.findMany(eventsQuery())
     cache.set('events', cachedEvents)
   }
-  // Calculate distance to events
-  const measuredEvents = measureDistance(cachedEvents, location)
-  const closeEvents = measuredEvents.filter((event: Event) => event.distance <= maxDistance)
-  // Exclude user's own and swiped events
-  const newEvents = closeEvents.filter((event: Event) => (
-    (event?.author_id !== id) &&
-    !(event?.matches.some((m: any) => m.user?.id === id))
-  ))
-  res.status(200).json(newEvents)
+  const events = cachedEvents
+    // Calculate distance to events
+    .map((e: Event) => ({
+      ...e,
+      distance: Math.round(getDistance(location.latitude, location.longitude, e.latitude, e.longitude))
+    }))
+    .filter((e: Event) => (
+      // Filter close events
+      e.distance <= maxDistance &&
+      // Exclude user's own
+      (e?.author_id !== id) &&
+      // And swiped events
+      !(e?.matches.some((m: any) => m.user?.id === id))
+    ))
+  res.status(200).json(events)
 })
 
 export default router
-
-const measureDistance = (events: Event[], location: Location) => (
-  events.map((event: Event) => 
-    ({...event,
-      distance: Math.round(getDistance(
-        location.latitude, 
-        location.longitude, 
-        event.latitude, 
-        event.longitude
-      ))
-    })
-  )
-)
 
 function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
   const deg2rad = (deg: number) => deg * (Math.PI/180)
@@ -107,18 +98,11 @@ type Event = {
   longitude:  number,
   distance:   number,
   matches:    [],
-  author:     Author
-}
-
-type Author = {
-  id:         string,
-  name:       string,
-  avatar:     string,
-  stars:      number,
-  rating:     number
-}
-
-type Location = {
-  latitude: number,
-  longitude: number
+  author:     {
+    id:         string,
+    name:       string,
+    avatar:     string,
+    stars:      number,
+    rating:     number
+  }
 }

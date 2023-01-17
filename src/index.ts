@@ -15,7 +15,7 @@ app.use(express.json())
 app.use(express.raw({ type: "application/vnd.custom-type" }))
 app.use(express.text({ type: "text/html" }))
 app.set('db', prisma) // Access db from routers
-app.all('*', auth);
+app.all('*', auth)
 
 app.use('/login', loginRouter)
 app.use('/feed', feedRouter)
@@ -30,7 +30,6 @@ app.post('/error', (req, res) => {
   console.log(`Client error: ${req.body}`)
   res.status(200).json({success: true})
 })
-
 
 app.listen(port, () => {
   console.log(`App listening at http://localhost:${port}`)
