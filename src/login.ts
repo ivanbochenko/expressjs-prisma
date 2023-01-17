@@ -5,7 +5,7 @@ import bcrypt from 'bcrypt'
 
 const router = express.Router()
 
-const secret = process.env.JWT_SECRET ?? ''
+const secret = process.env.JWT_SECRET
 const valid = 30 // Token valid for 30 days
 
 router.post('/', async (req, res) => {
@@ -128,9 +128,9 @@ const getFacebookEmail = async (code: string, verifier: string) => {
   const expoUrl = 'https://auth.expo.io/@'
   const link = new URL('oauth/access_token', baseUrl)
 
-  link.searchParams.set("client_id", process.env.FACEBOOK_CLIENT_ID ?? '' )
-  link.searchParams.set("redirect_uri", expoUrl + process.env.EXPO_SLUG ?? '' )
-  link.searchParams.set("client_secret", process.env.FACEBOOK_CLIENT_SECRET ?? '' )
+  link.searchParams.set("client_id", process.env.FACEBOOK_CLIENT_ID )
+  link.searchParams.set("redirect_uri", expoUrl + process.env.EXPO_SLUG )
+  link.searchParams.set("client_secret", process.env.FACEBOOK_CLIENT_SECRET )
   link.searchParams.set("grant_type", 'authorization_code' )
   link.searchParams.set("code_verifier", verifier )
   link.searchParams.set("code", code )

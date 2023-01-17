@@ -11,7 +11,7 @@ export const auth = (req: Request, res: Response, next: NextFunction) => {
       req.path.startsWith('/login')
     ) return next();
     const token = req.headers['authorization'] ?? ''
-    const { id, email }: any = jwt.verify(token, process.env.JWT_SECRET ?? '')
+    const { id, email }: any = jwt.verify(token, process.env.JWT_SECRET )
     res.locals.user = { id, email }
     next()
   } catch (error) {
@@ -23,8 +23,8 @@ export const auth = (req: Request, res: Response, next: NextFunction) => {
 export const generateUploadURL = async () => {
   const s3 = new aws.S3({
     region: "eu-central-1",
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? '',
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? '',
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     signatureVersion: 'v4'
   })
   const randomBytes = promisify(crypto.randomBytes)
