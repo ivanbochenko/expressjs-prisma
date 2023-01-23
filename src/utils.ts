@@ -12,7 +12,7 @@ export const auth = (req: Request, res: Response, next: NextFunction) => {
       req.path.startsWith('/login')
     ) return next();
     const token = req.headers['authorization'] ?? ''
-    const { id, email }: any = jwt.verify(token, process.env.JWT_SECRET as string )
+    const { id, email }: any = jwt.verify(token, process.env.JWT_SECRET!)
     res.locals.user = { id, email }
     next()
   } catch (error) {

@@ -17,13 +17,12 @@ app.use(express.text({ type: "text/html" }))
 app.set('db', prisma) // Access db from routers
 app.all('*', auth)
 
+app.use('/graphql', graphQLServer)
 app.use('/login', loginRouter)
 app.use('/feed', feedRouter)
-app.use('/graphql', graphQLServer)
 
 app.get('/s3url', async (req, res) => {
-  const url = await generateUploadURL()
-  res.status(200).json(url)
+  res.status(200).json(await generateUploadURL())
 })
 
 app.post('/error', (req, res) => {
