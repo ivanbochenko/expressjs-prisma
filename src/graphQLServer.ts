@@ -164,6 +164,7 @@ export const graphQLServer = createServer({
           const event = await db.event.findUnique({
             where: { id: event_id },
             include: {
+              author: true,
               matches: {
                 where: {
                   accepted: true
@@ -174,7 +175,9 @@ export const graphQLServer = createServer({
               },
             }
           })
-          const tokens = event?.matches.map(m => m.user.token).filter(t => t !== message.author.token)
+          const matchTokens = event?.matches.map(m => m.user.token)
+          matchTokens?.push(event?.author.token!)
+          const tokens = matchTokens?.filter(t => t !== message.author.token)
           if (tokens) {
             await sendPushNotifications(tokens, {
               to: '',
