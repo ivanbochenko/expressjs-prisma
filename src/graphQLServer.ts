@@ -1,5 +1,6 @@
 import { createServer, createPubSub, pipe, filter } from '@graphql-yoga/node'
 import { PrismaClient } from "@prisma/client"
+import { sendPushNotifications } from './utils'
 
 const pubSub = createPubSub()
 
@@ -160,6 +161,29 @@ export const graphQLServer = createServer({
             }
           })
           pubSub.publish('newMessages', message)
+          const event = await db.event.findUnique({
+            where: { id: event_id },
+            include: {
+              matches: {
+                where: {
+                  accepted: true
+                },
+                include: {
+                  user: true
+                }
+              },
+            }
+          })
+          const tokens = event?.matches.map(m => m.user.token)
+          if (tokens) {
+            await sendPushNotifications(tokens, {
+              to: '',
+              sound: 'default',
+              title: message.author.name!,
+              body: text,
+            })
+          }
+          
           return message
         },
         postReview: async (_, { text, stars, author_id, user_id }, { db } ) => {

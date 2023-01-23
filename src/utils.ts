@@ -40,9 +40,9 @@ export const generateUploadURL = async () => {
 
 const expo = new Expo()
 
-export const sendPushNotifications = async (somePushTokens: [], message: ExpoPushMessage) => {
+export const sendPushNotifications = async (pushTokens: (string | null)[], message: ExpoPushMessage) => {
   let messages = []
-  for (const pushToken of somePushTokens) {
+  for (const pushToken of pushTokens) {
 
     // Check that all your push tokens appear to be valid Expo push tokens
     if (!Expo.isExpoPushToken(pushToken)) {
