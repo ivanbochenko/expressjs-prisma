@@ -1,8 +1,8 @@
 {
-  "name": "expressjs-prisma",
+  "name": "woogie-server",
   "version": "1.0.0",
   "main": "index.js",
-  "author": "Jake Runzer",
+  "author": "Ivan Bochenko",
   "license": "MIT",
   "scripts": {
     "dev": "nodemon src/index.ts",

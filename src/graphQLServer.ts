@@ -174,7 +174,7 @@ export const graphQLServer = createServer({
               },
             }
           })
-          const tokens = event?.matches.map(m => m.user.token)
+          const tokens = event?.matches.map(m => m.user.token).filter(t => t !== message.author.token)
           if (tokens) {
             await sendPushNotifications(tokens, {
               to: '',
