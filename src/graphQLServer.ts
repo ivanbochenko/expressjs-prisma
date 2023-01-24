@@ -175,8 +175,11 @@ export const graphQLServer = createServer({
               },
             }
           })
+          // Notify users in chat
           const matchTokens = event?.matches.map(m => m.user.token)
+          // Include event author
           matchTokens?.push(event?.author.token!)
+          // Exclude message author
           const tokens = matchTokens?.filter(t => t !== message.author.token)
           if (tokens) {
             await sendPushNotifications(tokens, {
@@ -185,8 +188,7 @@ export const graphQLServer = createServer({
               title: message.author.name!,
               body: text,
             })
-          }
-          
+          }          
           return message
         },
         postReview: async (_, { text, stars, author_id, user_id }, { db } ) => {
@@ -268,18 +270,38 @@ export const graphQLServer = createServer({
             data: {
               user_id,
               event_id
+            },
+            include: {
+              user: true,
+              event: {
+                include: {
+                  author: true
+                }
+              }
             }
+          })
+          await sendPushNotifications([match.event.author.token], {
+            to: '',
+            sound: 'default',
+            title: 'You got a new match',
+            body: match.user.name!,
           })
           return match
         },
         acceptMatch: async (_, { id }, { db } ) => {
           const match = await db.match.update({
-            where: {
-              id
-            },
-            data: {
-              accepted: true
-            },
+            where: { id },
+            data: { accepted: true },
+            include: {
+              user: true,
+              event: true
+            }
+          })
+          await sendPushNotifications([match.user.token], {
+            to: '',
+            sound: 'default',
+            title: 'You matched to event',
+            body: match.event.title,
           })
           return match
         },
