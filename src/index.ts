@@ -26,7 +26,7 @@ app.get('/s3url', async (req, res) => {
 })
 
 app.post('/error', (req, res) => {
-  console.log(`Client error: ${JSON.stringify(req.body)}`)
+  console.log(`Client error: ${req.body}`)
   res.status(200).json({success: true})
 })
 
