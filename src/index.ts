@@ -1,5 +1,6 @@
 import express from "express"
 import cors from 'cors'
+import util from 'util'
 import { PrismaClient } from "@prisma/client"
 import { auth, generateUploadURL } from './utils'
 import { graphQLServer } from './graphQLServer'
@@ -26,7 +27,7 @@ app.get('/s3url', async (req, res) => {
 })
 
 app.post('/error', (req, res) => {
-  console.log(`Client error: ${JSON.stringify(req.body.error)}`)
+  console.log('Client error: ' + util.inspect(req.body, false, null, true ))
   res.status(200).json({success: true})
 })
 
