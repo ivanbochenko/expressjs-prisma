@@ -1,8 +1,3 @@
+push notifications on new event nearby
 
-push notifications
-
-new messages
-
-new matches
-
-notify me on events in #kyiv | #london | #paris
+ui page with place selection to get notificaions on new events from
