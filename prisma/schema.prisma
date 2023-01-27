@@ -63,6 +63,7 @@ model Match {
   event       Event @relation(fields: [event_id], references: [id], onDelete: Cascade)
   event_id    String
   accepted    Boolean @default(false)
+  dismissed   Boolean @default(false)
 }
 
 model Review {

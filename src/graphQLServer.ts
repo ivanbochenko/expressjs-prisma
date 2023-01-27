@@ -129,7 +129,8 @@ export const graphQLServer = createServer({
               author: true,
               matches: {
                 where: {
-                  accepted: false
+                  accepted: false,
+                  dismissed: false
                 },
                 select: {
                   id: true,
@@ -266,11 +267,12 @@ export const graphQLServer = createServer({
           const user = await db.user.delete({ where: { id } })
           return user
         },
-        createMatch: async (_, { user_id, event_id }, { db } ) => {
+        createMatch: async (_, { user_id, event_id, dismissed }, { db } ) => {
           const match = await db.match.create({
             data: {
               user_id,
-              event_id
+              event_id,
+              dismissed
             },
             include: {
               user: true,
@@ -281,12 +283,14 @@ export const graphQLServer = createServer({
               }
             }
           })
-          await sendPushNotifications([match.event.author.token], {
-            to: '',
-            sound: 'default',
-            title: 'You got a new match',
-            body: match.user.name!,
-          })
+          if (!dismissed) {
+            await sendPushNotifications([match.event.author.token], {
+              to: '',
+              sound: 'default',
+              title: 'You got a new match',
+              body: match.user.name!,
+            })
+          }
           return match
         },
         acceptMatch: async (_, { id }, { db } ) => {
@@ -368,6 +372,7 @@ export const graphQLServer = createServer({
         user_id:    ID!
         event_id:   ID!
         accepted:   Boolean
+        dissmised:  Boolean
         event:      Event!
         user:       User!
       }
