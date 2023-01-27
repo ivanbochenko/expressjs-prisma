@@ -240,6 +240,7 @@ export const graphQLServer = createServer({
               longitude,
             }
           })
+          // Notify nearby users
           return event
         },
         deleteEvent: async (_, { id }, { db } ) => {

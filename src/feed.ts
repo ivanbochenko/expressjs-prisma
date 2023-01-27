@@ -15,17 +15,16 @@ router.post('/', async (req, res) => {
   }
   const events = cachedEvents
     // Calculate distance to events
-    .map((e: Event) => ({
-      ...e,
-      distance: Math.round(getDistance(location.latitude, location.longitude, e.latitude, e.longitude))
-    }))
+    .map((e: Event) => {
+      const distance = getDistance(location.latitude, location.longitude, e.latitude, e.longitude)
+      return ({...e, distance})
+    })
+    // Exclude far away, user's own, swiped and full events
     .filter((e: Event) => (
-      // Filter close events
       e.distance <= maxDistance &&
-      // Exclude user's own
       (e?.author_id !== id) &&
-      // And swiped events
-      !(e?.matches.some((m: any) => m.user?.id === id))
+      !(e?.matches.some((m: any) => m.user?.id === id)) &&
+      e.matches.length < e.slots
     ))
   res.status(200).json(events)
 })
@@ -43,7 +42,7 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
     Math.sin(dLon/2) * Math.sin(dLon/2)
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
-  return R * c; // Distance in km
+  return Math.round(R * c) // Distance in km
 }
 
 const eventsQuery = () => {
