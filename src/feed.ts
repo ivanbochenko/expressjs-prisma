@@ -2,25 +2,28 @@ import express from 'express'
 import NodeCache from 'node-cache';
 
 const router = express.Router()
-const cache = new NodeCache({ stdTTL: 60 * 3 }) // default time-to-live 3 min
+
+// Cache default time-to-live 3 min
+const stdTTL = 60 * 3
+const cache = new NodeCache({ stdTTL })
 
 router.post('/', async (req, res) => {
   const db = req.app.get('db')
   const { location, id, maxDistance } = req.body
   // Try to get data from cache
-  let cachedEvents: any = cache.get('events')
+  let cachedEvents: Event[] | undefined = cache.get('events')
   if (!cachedEvents) {
     cachedEvents = await db.event.findMany(eventsQuery())
     cache.set('events', cachedEvents)
   }
-  const events = cachedEvents
+  const events = cachedEvents!
     // Calculate distance to events
-    .map((e: Event) => {
+    .map( e => {
       const distance = getDistance(location.latitude, location.longitude, e.latitude, e.longitude)
       return ({...e, distance})
     })
     // Exclude far away, user's own, swiped and full events
-    .filter((e: Event) => (
+    .filter( e => (
       e.distance <= maxDistance &&
       (e?.author_id !== id) &&
       !(e?.matches.some((m: any) => m.user?.id === id)) &&
