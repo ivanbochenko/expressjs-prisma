@@ -267,7 +267,7 @@ export const graphQLServer = createServer({
           const user = await db.user.delete({ where: { id } })
           return user
         },
-        createMatch: async (_, { user_id, event_id, dismissed }, { db } ) => {
+        createMatch: async (_, { user_id, event_id, dismissed = false }, { db } ) => {
           const match = await db.match.create({
             data: {
               user_id,
