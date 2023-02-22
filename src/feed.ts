@@ -26,9 +26,13 @@ router.post('/', async (req, res) => {
     .filter( e => (
       e.distance <= maxDistance &&
       (e?.author_id !== id) &&
-      !(e?.matches.some((m: any) => m.user?.id === id)) &&
+      !(e?.matches.some((m: Match) => m.user?.id === id)) &&
       e.matches.length < e.slots
     ))
+    .map( e => {
+      const matches = e.matches.filter((m: Match) => m.accepted)
+      return ({...e, matches})
+    })
   res.status(200).json(events)
 })
 
@@ -64,9 +68,6 @@ const eventsQuery = () => {
     },
     include: {
       matches: {
-        where: {
-          accepted: true
-        },
         include: {
           user: {
             select: {
@@ -99,12 +100,22 @@ type Event = {
   latitude:   number,
   longitude:  number,
   distance:   number,
-  matches:    [],
-  author:     {
-    id:         string,
-    name:       string,
-    avatar:     string,
-    stars:      number,
-    rating:     number
-  }
+  matches:    Match[],
+  author:     User,
+}
+
+type Match = {
+  id:         string,
+  user:       User,
+  event:      Event,
+  accepted:   boolean,
+  dismissed:  boolean,
+}
+
+type User = {
+  id:         string,
+  name:       string,
+  avatar:     string,
+  stars:      number,
+  rating:     number
 }

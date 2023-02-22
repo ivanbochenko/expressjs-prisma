@@ -8,30 +8,44 @@ const router = express.Router()
 const secret = process.env.JWT_SECRET!
 const valid = 30 // Token valid for 30 days
 
+// router.post('/new', async (req,res) => {
+//   const { id, email } = req.body
+//   const token = jwt.sign({
+//     id,
+//     email,
+//     exp: getExpirationTime()
+//   }, secret, { algorithm: 'HS256' })
+//   res.status(200).json(token)
+// })
+
 router.post('/', async (req, res) => {
-  const db = req.app.get('db')
-  const { token, pushToken } = req.body
-  const { id, email, pushToken: prevPushToken }: any = jwt.verify(token, secret)
+  try {
+    const db = req.app.get('db')
+    const { token, pushToken } = req.body
+    const { id, email, pushToken: prevPushToken }: any = jwt.verify(token, secret)
 
-  // Update push notifications token
-  if (prevPushToken !== pushToken) {
-    const user = await db.user.upsert({
-      where: {id},
-      update: {token: pushToken},
-      create: {token: pushToken},
-    })
+    // Update push notifications token
+    if (prevPushToken !== pushToken) {
+      const user = await db.user.upsert({
+        where: {id},
+        update: {token: pushToken},
+        create: {token: pushToken},
+      })
+    }
+
+    // Refresh JWT
+    const newToken = jwt.sign({
+      id,
+      email,
+      pushToken,
+      exp: getExpirationTime()
+    }, secret, { algorithm: 'HS256' } )
+
+    // send JWT in response to the client
+    res.status(200).json({token: newToken, id})
+  } catch (error) {
+    console.log(error)    
   }
-
-  // Refresh JWT
-  const newToken = jwt.sign({
-    id,
-    email,
-    pushToken,
-    exp: getExpirationTime()
-  }, secret, { algorithm: 'HS256' } )
-
-  // send JWT in response to the client
-  res.status(200).json({token: newToken, id})
 })
 
 router.post('/password', async (req, res) => {
