@@ -29,6 +29,7 @@ router.post('/', async (req, res) => {
       !(e?.matches.some((m: Match) => m.user?.id === id)) &&
       e.matches.length < e.slots
     ))
+    // Remove unaccepted matches
     .map( e => {
       const matches = e.matches.filter((m: Match) => m.accepted)
       return ({...e, matches})
@@ -82,8 +83,7 @@ const eventsQuery = () => {
         select: {
           id: true,
           name: true,
-          avatar: true,
-          stars: true
+          avatar: true
         }
       }
     }
@@ -115,7 +115,5 @@ type Match = {
 type User = {
   id:         string,
   name:       string,
-  avatar:     string,
-  stars:      number,
-  rating:     number
+  avatar:     string
 }
