@@ -71,22 +71,26 @@ router.post('/password', async (req, res) => {
 // Create new user with facebook email
 
 router.post('/facebook', async (req, res) => {
-  const db = req.app.get('db')
-  const { code, verifier, pushToken } = req.body
-  const email = await getFacebookEmail(code, verifier)
-  const user = await db.user.upsert({
-    where: { email },
-    update: { email, token: pushToken },
-    create: { email, token: pushToken },
-  })
-  const id = user.id
-  // Create JWT
-  const token = jwt.sign({
-    id,
-    email,
-    exp: getExpirationTime()
-  }, secret, { algorithm: 'HS256' })
-  res.status(200).json({token, id})
+  try {
+    const db = req.app.get('db')
+    const { code, verifier, pushToken } = req.body
+    const email = await getFacebookEmail(code, verifier)
+    const user = await db.user.upsert({
+      where: { email },
+      update: { email, token: pushToken },
+      create: { email, token: pushToken },
+    })
+    const id = user.id
+    // Create JWT
+    const token = jwt.sign({
+      id,
+      email,
+      exp: getExpirationTime()
+    }, secret, { algorithm: 'HS256' })
+    res.status(200).json({token, id})
+  } catch (error) {
+    console.error(error)
+  }
 })
 
 router.post('/reset', async (req, res) => {
