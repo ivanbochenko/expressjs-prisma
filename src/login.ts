@@ -103,7 +103,7 @@ router.post('/register', async (req, res) => {
       update: { },
       create: { email, token: pushToken, password: hashPassword },
     })
-    res.status(200).json({succes: true})
+    res.status(200).json({success: true})
   } catch (error) {
     console.error(error)
   }
@@ -119,7 +119,7 @@ router.post('/reset', async (req, res) => {
       password
     }
   })
-  res.status(200).json({succes: true})
+  res.status(200).json({success: true})
 })
 
 export default router;
