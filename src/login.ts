@@ -93,6 +93,22 @@ router.post('/facebook', async (req, res) => {
   }
 })
 
+router.post('/register', async (req, res) => {
+  try {
+    const db = req.app.get('db')
+    const { email, pushToken, password } = req.body
+    const hashPassword = bcrypt.hashSync(password, 8)
+    const user = await db.user.upsert({
+      where: { email },
+      update: { },
+      create: { email, token: pushToken, password: hashPassword },
+    })
+    res.status(200).json({succes: true})
+  } catch (error) {
+    console.error(error)
+  }
+})
+
 router.post('/reset', async (req, res) => {
   const db = req.app.get('db')
   const { id }: any = jwt.verify(req.headers['authorization']!, secret)
