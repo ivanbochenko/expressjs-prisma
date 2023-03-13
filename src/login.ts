@@ -111,16 +111,21 @@ router.post('/register', async (req, res) => {
 })
 
 router.post('/reset', async (req, res) => {
-  const db = req.app.get('db')
-  const { id }: any = jwt.verify(req.headers['authorization']!, secret)
-  const password = bcrypt.hashSync(req.body.password, 8)
-  const user = await db.user.update({
-    where: { id },
-    data: {
-      password
-    }
-  })
-  res.status(200).json({success: true})
+  try {
+    const db = req.app.get('db')
+    const { id }: any = jwt.verify(req.headers['authorization']!, secret)
+    const password = bcrypt.hashSync(req.body.password, 8)
+    const user = await db.user.update({
+      where: { id },
+      data: {
+        password
+      }
+    })
+    res.status(200).json({success: true})
+  } catch (error) {
+    res.status(500).json({success: false})
+    console.error(error)
+  }
 })
 
 export default router;
