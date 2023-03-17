@@ -8,6 +8,7 @@ const prisma = new PrismaClient()
 
 export const graphQLServer = createServer({
   maskedErrors: false,
+  logging: true,
   context: { pubSub, db: prisma },
   schema: {
     resolvers: {
