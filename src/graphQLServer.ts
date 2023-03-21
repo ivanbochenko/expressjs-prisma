@@ -163,34 +163,36 @@ export const graphQLServer = createServer({
             }
           })
           pubSub.publish('newMessages', message)
-          const event = await db.event.findUnique({
-            where: { id: event_id },
+          const matches = await db.match.findMany({
+            where: {
+              event_id
+            },
             include: {
-              author: true,
-              matches: {
-                where: {
-                  accepted: true
-                },
-                include: {
-                  user: true
+              user: true,
+              event: {
+                select: {
+                  author: {
+                    select:{
+                      token: true
+                    }
+                  }
                 }
-              },
+              }
             }
           })
-          // Notify users in chat
-          const matchTokens = event!.matches.map(m => m.user.token)
+          // Get tokens
+          const matchTokens = matches.map(m => m.user.token)
           // Include event author
-          matchTokens.push(event!.author.token)
+          matchTokens.push(matches[0].event.author.token)
           // Exclude message author
-          const tokens = matchTokens.filter(t => t !== message.author.token)
-          if (tokens) {
-            await sendPushNotifications(tokens, {
-              to: '',
-              sound: 'default',
-              title: message.author.name!,
-              body: text,
-            })
-          }          
+          const tokens = matchTokens.filter(t => t != message.author.token)
+          // Notify users in chat
+          await sendPushNotifications(tokens, {
+            to: '',
+            sound: 'default',
+            title: message.author.name!,
+            body: text,
+          })
           return message
         },
         postReview: async (_, { text, stars, author_id, user_id }, { db } ) => {
