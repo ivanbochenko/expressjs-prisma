@@ -158,7 +158,7 @@ export const graphQLServer = createServer({
               author_id,
               event_id,
             },
-            select: {
+            include: {
               author: {
                 select: {
                   token: true,
