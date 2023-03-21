@@ -158,8 +158,13 @@ export const graphQLServer = createServer({
               author_id,
               event_id,
             },
-            include: {
-              author: true
+            select: {
+              author: {
+                select: {
+                  token: true,
+                  name: true
+                }
+              }
             }
           })
           pubSub.publish('newMessages', message)
@@ -183,8 +188,7 @@ export const graphQLServer = createServer({
           // Get tokens
           const tokens = matches.map(m => m.user.token)
           // Include event author
-          const authorToken = matches[0].event.author.token
-          tokens.push(authorToken)
+          tokens.push(matches[0].event.author.token)
           // Exclude message author
           const index = tokens.indexOf(message.author.token)
           if (index > -1) {
