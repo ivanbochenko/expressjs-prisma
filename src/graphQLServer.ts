@@ -178,11 +178,11 @@ export const graphQLServer = createServer({
             }
           })
           // Notify users in chat
-          const matchTokens = event?.matches.map(m => m.user.token)
+          const matchTokens = event!.matches.map(m => m.user.token)
           // Include event author
-          matchTokens?.push(event?.author.token!)
+          matchTokens.push(event!.author.token)
           // Exclude message author
-          const tokens = matchTokens?.filter(t => t !== message.author.token)
+          const tokens = matchTokens.filter(t => t !== message.author.token)
           if (tokens) {
             await sendPushNotifications(tokens, {
               to: '',
