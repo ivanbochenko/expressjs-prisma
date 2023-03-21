@@ -159,12 +159,7 @@ export const graphQLServer = createServer({
               event_id,
             },
             include: {
-              author: {
-                select: {
-                  token: true,
-                  name: true
-                }
-              }
+              author: true
             }
           })
           pubSub.publish('newMessages', message)
