@@ -181,18 +181,24 @@ export const graphQLServer = createServer({
             }
           })
           // Get tokens
-          const matchTokens = matches.map(m => m.user.token)
+          const tokens = matches.map(m => m.user.token)
           // Include event author
-          matchTokens.push(matches[0].event.author.token)
+          const authorToken = matches[0].event.author.token
+          tokens.push(authorToken)
           // Exclude message author
-          const tokens = matchTokens.filter(t => t != message.author.token)
+          const index = tokens.indexOf(message.author.token)
+          if (index > -1) {
+            tokens.splice(index, 1)
+          }
           // Notify users in chat
-          await sendPushNotifications(tokens, {
-            to: '',
-            sound: 'default',
-            title: message.author.name!,
-            body: text,
-          })
+          if (tokens) {
+            await sendPushNotifications(tokens, {
+              to: '',
+              sound: 'default',
+              title: message.author.name!,
+              body: text,
+            })
+          }
           return message
         },
         postReview: async (_, { text, stars, author_id, user_id }, { db } ) => {
