@@ -6,6 +6,7 @@ import { auth, generateUploadURL } from './utils'
 import { graphQLServer } from './graphQLServer'
 import loginRouter from './login'
 import feedRouter from './feed'
+// import { cwd } from 'process';
 
 const prisma = new PrismaClient()
 const app = express()
@@ -33,4 +34,5 @@ app.post('/error', (req, res) => {
 
 app.listen(port, () => {
   console.log(`App listening at http://localhost:${port}`)
+  // console.log(`Current directory: ${cwd()}`);
 })
