@@ -17,7 +17,7 @@ app.use(express.json())
 app.use(express.raw({ type: "application/vnd.custom-type" }))
 app.use(express.text({ type: "text/html" }))
 app.set('db', prisma) // Access db from routers
-app.all('*', auth)
+// app.all('*', auth)
 
 app.use('/graphql', graphQLServer)
 app.use('/login', loginRouter)
