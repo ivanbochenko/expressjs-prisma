@@ -1,7 +1,7 @@
 
 type User {
   id:         ID!
-  created_at: DateTime!
+  created_at: DateTime
   email:      String
   phone:      String
   name:       String
