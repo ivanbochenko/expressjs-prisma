@@ -9,7 +9,7 @@ const cache = new NodeCache({ stdTTL })
 
 router.post('/', async (req, res) => {
   const db = req.app.get('db')
-  const { location, id, maxDistance } = req.body
+  const { location, user_id, maxDistance } = req.body
   // Try to get data from cache
   let cachedEvents: Event[] | undefined = cache.get('events')
   if (!cachedEvents) {
@@ -25,8 +25,8 @@ router.post('/', async (req, res) => {
     // Exclude far away, user's own, swiped and full events
     .filter( e => (
       e.distance <= maxDistance &&
-      (e?.author_id !== id) &&
-      !(e?.matches.some((m: Match) => m.user?.id === id)) &&
+      (e?.author_id !== user_id) &&
+      !(e?.matches.some((m: Match) => m.user?.id === user_id)) &&
       e.matches.length < e.slots
     ))
     // Remove unaccepted matches
