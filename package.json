@@ -5,6 +5,7 @@
   "author": "Ivan Bochenko",
   "license": "MIT",
   "scripts": {
+    "db": "npx prisma studio",
     "dev": "nodemon src/index.ts",
     "build": "yarn migrate:deploy && tsc",
     "start": "node dist/src/index.js",

@@ -1,15 +1,9 @@
 import { readFileSync } from 'node:fs'
-import { createServer, createPubSub, pipe, filter } from '@graphql-yoga/node'
-import { PrismaClient } from "@prisma/client"
+import { createServer, pipe, filter } from '@graphql-yoga/node'
 import { sendPushNotifications } from './utils'
 import { Resolvers } from '../resolvers-types'
+import { Context, context } from '../context'
 
-const pubSub = createPubSub()
-
-const typeDefs = readFileSync('./src/schema.graphql', 'utf8')
-
-const prisma = new PrismaClient()
- 
 const resolvers: Resolvers = {
   Query: {
     user: async (_, { id }, { db } ) => {
@@ -150,7 +144,7 @@ const resolvers: Resolvers = {
     }
   },
   Mutation: {
-    postMessage: async (_, { text, author_id, event_id }, { pubSub, db } ) => {
+    postMessage: async (_, { text, author_id, event_id }, { pubSub, db }: Context ) => {
       const message = await db.message.create({
         data: {
           text,
@@ -168,21 +162,16 @@ const resolvers: Resolvers = {
         },
         include: {
           user: true,
-          event: {
-            select: {
-              author: {
-                select: {
-                  token: true
-                }
-              }
-            }
-          }
         }
       })
       // Get tokens
       const tokens = matches.map((m: any) => m.user.token)
       // Include event author
-      tokens.push(matches[0].event.author.token)
+      const event = await db.event.findUnique({
+        where: { id: event_id },
+        include: { author: true }
+      })
+      tokens.push(event!.author.token)
       // Exclude message author
       const index = tokens.indexOf(message.author.token)
       if (index > -1) {
@@ -274,7 +263,7 @@ const resolvers: Resolvers = {
       const user = await db.user.delete({ where: { id } })
       return user
     },
-    createMatch: async (_, { user_id, event_id, dismissed = false }, { db } ) => {
+    createMatch: async (_, { user_id, event_id, dismissed }, { db } ) => {
       const match = await db.match.create({
         data: {
           user_id,
@@ -337,10 +326,12 @@ const resolvers: Resolvers = {
   },
 }
 
+const typeDefs = readFileSync('./src/schema.graphql', 'utf8')
+
 export const graphQLServer = createServer({
   maskedErrors: false,
   logging: true,
-  context: { pubSub, db: prisma },
+  context,
   schema: {
     resolvers,
     typeDefs

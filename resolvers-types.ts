@@ -197,7 +197,7 @@ export type User = {
   age?: Maybe<Scalars['Int']>;
   avatar?: Maybe<Scalars['String']>;
   bio?: Maybe<Scalars['String']>;
-  created_at: Scalars['DateTime'];
+  created_at?: Maybe<Scalars['DateTime']>;
   email?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
   messages?: Maybe<Array<Maybe<Message>>>;
@@ -390,7 +390,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   age?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   bio?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   messages?: Resolver<Maybe<Array<Maybe<ResolversTypes['Message']>>>, ParentType, ContextType>;

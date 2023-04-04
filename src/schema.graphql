@@ -67,8 +67,11 @@ type Query {
 }
 
 type Mutation {
+
   postMessage(author_id: ID!, event_id: ID!, text: String!): Message!
+
   postReview(author_id: ID!, user_id: ID!, text: String!, stars: Int!): Review!
+  
   postEvent(
     author_id: ID!,
     photo:     String!,
@@ -80,8 +83,10 @@ type Mutation {
     longitude: Float!
   ): Event!
   deleteEvent(id: ID!): Event!
+
   editUser(id: ID!, name: String!, age: Int!, sex: String!, bio: String, avatar: String): User!
   deleteUser(id: ID!): User
+
   createMatch(user_id: ID!, event_id: ID!, dismissed: Boolean!): Match!
   acceptMatch(id: ID!): Match!
   deleteMatch(id: ID!): Match!
