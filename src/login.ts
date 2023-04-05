@@ -64,7 +64,7 @@ router.post('/password', async (req, res) => {
     }, secret, { algorithm: 'HS256' })
     res.status(200).json({token, id: user.id, success: true})
   } else {
-    res.status(500).json({success: false})
+    res.status(200).json({success: false})
   }
 })
 
