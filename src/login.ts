@@ -2,6 +2,7 @@ import express from 'express'
 import jwt from 'jsonwebtoken'
 import axios from 'axios'
 import bcrypt from 'bcrypt'
+import { db } from '../dbClient'
 
 const router = express.Router()
 
@@ -20,7 +21,6 @@ const valid = 30 // Token valid for 30 days
 
 router.post('/', async (req, res) => {
   try {
-    const db = req.app.get('db')
     const { token, pushToken } = req.body
     const { id, email, pushToken: prevPushToken }: any = jwt.verify(token, secret)
 
@@ -72,7 +72,6 @@ router.post('/password', async (req, res) => {
 
 router.post('/facebook', async (req, res) => {
   try {
-    const db = req.app.get('db')
     const { code, verifier, pushToken } = req.body
     const email = await getFacebookEmail(code, verifier)
     const user = await db.user.upsert({
@@ -95,15 +94,24 @@ router.post('/facebook', async (req, res) => {
 
 router.post('/register', async (req, res) => {
   try {
-    const db = req.app.get('db')
     const { email, pushToken, password } = req.body
     const hashPassword = bcrypt.hashSync(password, 8)
-    const user = await db.user.upsert({
-      where: { email },
-      update: { },
-      create: { email, token: pushToken, password: hashPassword },
-    })
-    res.status(200).json({success: true})
+    const userCount = await db.user.count({ where: { email } })
+    if (userCount > 0) {
+      res.status(200).json({success: false, message: 'User already exists'})
+    } else {
+      const user = await db.user.create({
+        data: { email, token: pushToken, password: hashPassword },
+      })
+      
+      const token = jwt.sign({
+        id: user.id,
+        email: user.email,
+        exp: getExpirationTime() 
+      }, secret, { algorithm: 'HS256' })
+
+      res.status(200).json({token, id: user.id, success: true})
+    }
   } catch (error) {
     res.status(500).json({success: false})
     console.error(error)
@@ -112,7 +120,6 @@ router.post('/register', async (req, res) => {
 
 router.post('/reset', async (req, res) => {
   try {
-    const db = req.app.get('db')
     const { id }: any = jwt.verify(req.headers['authorization']!, secret)
     const password = bcrypt.hashSync(req.body.password, 8)
     const user = await db.user.update({

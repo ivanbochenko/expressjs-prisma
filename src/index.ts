@@ -6,7 +6,7 @@ import { graphQLServer } from './graphQLServer'
 import loginRouter from './login'
 import feedRouter from './feed'
 import { cwd } from 'process';
-import {db} from './dbClient'
+import {db} from '../dbClient'
 
 const app = express()
 const port = process.env.PORT || 3000

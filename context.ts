@@ -1,4 +1,4 @@
-import { db } from './src/dbClient';
+import { db } from './dbClient';
 import { createPubSub } from '@graphql-yoga/node'
 import { PrismaClient } from "@prisma/client";
 
