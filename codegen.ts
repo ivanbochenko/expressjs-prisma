@@ -6,17 +6,11 @@ const config: CodegenConfig = {
     './resolvers-types.ts': {
       plugins: [
         'typescript',
-        'typescript-resolvers', 
-        // {
-        //   add: {
-        //     context: '/* eslint-disable */'
-        //   }
-        // },
+        'typescript-resolvers',
       ],
-      // config: {
-        
-      //   contextType: './context#Context'
-      // }
+      config: {
+        contextType: './context#Context'
+      }
     },
   },
 };

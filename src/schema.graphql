@@ -17,7 +17,7 @@ type User {
 type Event {
   id:         ID!
   author_id:  ID!
-  photo:      String!
+  photo:      String
   title:      String!
   text:       String
   slots:      Int
@@ -41,8 +41,8 @@ type Match {
   event_id:   ID!
   accepted:   Boolean
   dissmised:  Boolean
-  event:      Event!
-  user:       User!
+  event:      Event
+  user:       User
 }
 
 type Review {
@@ -50,8 +50,8 @@ type Review {
   text:       String!
   time:       DateTime!
   stars:      Int!
-  author:     User!
-  user:       User!
+  author:     User
+  user:       User
 }
 
 scalar DateTime

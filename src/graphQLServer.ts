@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs'
 import { createServer, pipe, filter } from '@graphql-yoga/node'
+import { GraphQLError } from 'graphql'
 import { sendPushNotifications } from './utils'
 import { Resolvers } from '../resolvers-types'
-import { Context, context } from '../context'
+import { context } from '../context'
 
 const resolvers: Resolvers = {
   Query: {
@@ -17,7 +18,7 @@ const resolvers: Resolvers = {
           }
         }
       })
-      return {...user, reviews: user?.recievedReviews}
+      return {...user!, reviews: user?.recievedReviews!}
     },
     event: async (_, { id }, { db } ) => {
       const event = await db.event.findUnique({
@@ -28,21 +29,13 @@ const resolvers: Resolvers = {
             where: {
               accepted: true
             },
-            select: {
-              id: true,
-              accepted: true,
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  avatar: true,
-                }
-              }
+            include: {
+              user: true
             }
           },
         }
       })
-      return event
+      return event!
     },
     events: async (_, { author_id }, { db } ) => {
       const events = await db.event.findMany({
@@ -53,16 +46,8 @@ const resolvers: Resolvers = {
             where: {
               accepted: true
             },
-            select: {
-              id: true,
-              accepted: true,
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  avatar: true,
-                }
-              }
+            include: {
+              user: true
             }
           },
         }
@@ -126,16 +111,8 @@ const resolvers: Resolvers = {
               accepted: false,
               dismissed: false
             },
-            select: {
-              id: true,
-              accepted: true,
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  avatar: true,
-                }
-              }
+            include:{
+              user: true
             }
           },
         }
@@ -144,7 +121,7 @@ const resolvers: Resolvers = {
     }
   },
   Mutation: {
-    postMessage: async (_, { text, author_id, event_id }, { pubSub, db }: Context ) => {
+    postMessage: async (_, { text, author_id, event_id }, { pubSub, db } ) => {
       const message = await db.message.create({
         data: {
           text,
@@ -189,40 +166,42 @@ const resolvers: Resolvers = {
       return message
     },
     postReview: async (_, { text, stars, author_id, user_id }, { db } ) => {
-      const review = await db.review.upsert({
-        where: {
-          id: author_id + user_id
-        },
-        create: {
-          text,
-          stars,
-          author_id,
-          user_id,
-        },
-        update: {
-          text,
-          stars
-        }
-      })
+
       const reviews = await db.review.findMany({
         where: {
           user_id
         }
       })
-      const starsArr = reviews.map((r: any) => r.stars)
-      const sum = starsArr.reduce((a: number, b: number) => a + b, 0)
-      const avg = Math.round(sum / starsArr.length) || 0
-      const rating = Math.round((sum / starsArr.length) / 2.5 * starsArr.length)
-      await db.user.update({
-        where: {
-          id: user_id
-        },
-        data: {
-          stars: avg,
-          rating
-        }
-      })
-      return review
+      const prevReview = reviews.filter((r: any) => r.author_id === author_id)
+      const hasReviewed = prevReview.length
+
+      if (hasReviewed) {
+        return prevReview[0]
+      } else {
+        const review = await db.review.create({
+          data: {
+            text,
+            stars,
+            author_id,
+            user_id,
+          }
+        })
+  
+        const starsArr = reviews.map((r: any) => r.stars)
+        const sum = starsArr.reduce((a: number, b: number) => a + b, 0)
+        const avg = Math.round(sum / starsArr.length) || 0
+        const rating = Math.round((sum / starsArr.length) / 2.5 * starsArr.length)
+        await db.user.update({
+          where: {
+            id: user_id
+          },
+          data: {
+            stars: avg,
+            rating
+          }
+        })
+        return review
+      }
     },
     postEvent: async (_, { author_id, photo, title, text, slots, time, latitude, longitude }, { db } ) => {
       const event = await db.event.create({
