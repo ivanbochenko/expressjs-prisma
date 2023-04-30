@@ -1,6 +1,5 @@
 import { readFileSync } from 'node:fs'
 import { createServer, pipe, filter } from '@graphql-yoga/node'
-import { GraphQLError } from 'graphql'
 import { sendPushNotifications } from './utils'
 import { Resolvers } from '../resolvers-types'
 import { context } from '../context'
@@ -142,7 +141,7 @@ const resolvers: Resolvers = {
         }
       })
       // Get tokens
-      const tokens = matches.map((m: any) => m.user.token)
+      const tokens = matches.map((m) => m.user.token)
       // Include event author
       const event = await db.event.findUnique({
         where: { id: event_id },
@@ -172,7 +171,7 @@ const resolvers: Resolvers = {
           user_id
         }
       })
-      const prevReview = reviews.filter((r: any) => r.author_id === author_id)
+      const prevReview = reviews.filter((r) => r.author_id === author_id)
       const hasReviewed = prevReview.length
 
       if (hasReviewed) {
@@ -187,8 +186,8 @@ const resolvers: Resolvers = {
           }
         })
   
-        const starsArr = reviews.map((r: any) => r.stars)
-        const sum = starsArr.reduce((a: number, b: number) => a + b, 0)
+        const starsArr = reviews.map((r) => r.stars)
+        const sum = starsArr.reduce((a, b) => a + b, 0)
         const avg = Math.round(sum / starsArr.length) || 0
         const rating = Math.round((sum / starsArr.length) / 2.5 * starsArr.length)
         await db.user.update({
@@ -298,7 +297,7 @@ const resolvers: Resolvers = {
       subscribe: async (_, { event_id }, { pubSub } ) =>
         pipe(
           pubSub.subscribe('newMessages'),
-          filter((payload: any) => payload.event_id == event_id)
+          filter((payload) => payload.event_id == event_id)
         ),
       resolve: (value: any) => value
     },
