@@ -31,6 +31,22 @@ export type Event = {
   title: Scalars['String'];
 };
 
+export type EventD = {
+  __typename?: 'EventD';
+  author?: Maybe<User>;
+  author_id: Scalars['ID'];
+  distance?: Maybe<Scalars['Int']>;
+  id: Scalars['ID'];
+  latitude?: Maybe<Scalars['Float']>;
+  longitude?: Maybe<Scalars['Float']>;
+  matches?: Maybe<Array<Maybe<Match>>>;
+  photo?: Maybe<Scalars['String']>;
+  slots?: Maybe<Scalars['Int']>;
+  text?: Maybe<Scalars['String']>;
+  time: Scalars['DateTime'];
+  title: Scalars['String'];
+};
+
 export type Match = {
   __typename?: 'Match';
   accepted?: Maybe<Scalars['Boolean']>;
@@ -131,6 +147,7 @@ export type Query = {
   __typename?: 'Query';
   event?: Maybe<Event>;
   events?: Maybe<Array<Maybe<Event>>>;
+  feed?: Maybe<Array<Maybe<EventD>>>;
   lastEvent?: Maybe<Event>;
   matches?: Maybe<Array<Maybe<Match>>>;
   messages?: Maybe<Array<Maybe<Message>>>;
@@ -146,6 +163,14 @@ export type QueryEventArgs = {
 
 export type QueryEventsArgs = {
   author_id: Scalars['ID'];
+};
+
+
+export type QueryFeedArgs = {
+  latitude: Scalars['Float'];
+  longitude: Scalars['Float'];
+  maxDistance: Scalars['Int'];
+  user_id: Scalars['ID'];
 };
 
 
@@ -282,6 +307,7 @@ export type ResolversTypes = {
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']>;
   Event: ResolverTypeWrapper<Event>;
+  EventD: ResolverTypeWrapper<EventD>;
   Float: ResolverTypeWrapper<Scalars['Float']>;
   ID: ResolverTypeWrapper<Scalars['ID']>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
@@ -300,6 +326,7 @@ export type ResolversParentTypes = {
   Boolean: Scalars['Boolean'];
   DateTime: Scalars['DateTime'];
   Event: Event;
+  EventD: EventD;
   Float: Scalars['Float'];
   ID: Scalars['ID'];
   Int: Scalars['Int'];
@@ -320,6 +347,22 @@ export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversT
 export type EventResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Event'] = ResolversParentTypes['Event']> = {
   author?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   author_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  latitude?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  longitude?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  matches?: Resolver<Maybe<Array<Maybe<ResolversTypes['Match']>>>, ParentType, ContextType>;
+  photo?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  slots?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  time?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type EventDResolvers<ContextType = Context, ParentType extends ResolversParentTypes['EventD'] = ResolversParentTypes['EventD']> = {
+  author?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  author_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  distance?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   latitude?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   longitude?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
@@ -366,6 +409,7 @@ export type MutationResolvers<ContextType = Context, ParentType extends Resolver
 export type QueryResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<QueryEventArgs, 'id'>>;
   events?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType, RequireFields<QueryEventsArgs, 'author_id'>>;
+  feed?: Resolver<Maybe<Array<Maybe<ResolversTypes['EventD']>>>, ParentType, ContextType, RequireFields<QueryFeedArgs, 'latitude' | 'longitude' | 'maxDistance' | 'user_id'>>;
   lastEvent?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<QueryLastEventArgs, 'author_id'>>;
   matches?: Resolver<Maybe<Array<Maybe<ResolversTypes['Match']>>>, ParentType, ContextType, RequireFields<QueryMatchesArgs, 'user_id'>>;
   messages?: Resolver<Maybe<Array<Maybe<ResolversTypes['Message']>>>, ParentType, ContextType, RequireFields<QueryMessagesArgs, 'event_id'>>;
@@ -406,6 +450,7 @@ export type UserResolvers<ContextType = Context, ParentType extends ResolversPar
 export type Resolvers<ContextType = Context> = {
   DateTime?: GraphQLScalarType;
   Event?: EventResolvers<ContextType>;
+  EventD?: EventDResolvers<ContextType>;
   Match?: MatchResolvers<ContextType>;
   Message?: MessageResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;

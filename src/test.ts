@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
 
 const router = express.Router()
@@ -33,4 +33,57 @@ router.post('/notification', async (req, res) => {
   res.status(200).json({success: true})
 })
 
+router.post('/db', async (req: Request, res: Response) => {
+  const user_id = '1011'
+  const db = req.app.get('db')
+  const events = await db.event.findMany(eventsQuery(user_id))
+  res.status(200).json(events)
+})
+
+export default router
+
 const getExpirationTime = () => Math.floor(Date.now() / 1000) + 86400 * 30
+
+
+const eventsQuery = (user_id: string) => {
+  const date = new Date()
+  date.setHours(0,0,0,0)
+  return ({
+    where: {
+      time: {
+        gte: date
+      },
+    },
+    orderBy: {
+      author: {
+        rating: 'desc'
+      }
+    },
+    include: {
+      matches: {
+        where: {
+          OR: [
+            { accepted: true, },
+            { user: { id: user_id } },
+          ],
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true
+            }
+          }
+        }
+      },
+      author: {
+        select: {
+          id: true,
+          name: true,
+          avatar: true
+        }
+      }
+    }
+  })
+}

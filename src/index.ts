@@ -4,7 +4,6 @@ import util from 'util'
 import { auth, generateUploadURL } from './utils'
 import { graphQLServer } from './graphQLServer'
 import loginRouter from './login'
-import feedRouter from './feed'
 import { cwd } from 'process';
 import { db } from '../dbClient'
 
@@ -23,7 +22,6 @@ if(process.env.NODE_ENV !== 'dev') {
 
 app.use('/graphql', graphQLServer)
 app.use('/login', loginRouter)
-app.use('/feed', feedRouter)
 
 app.get('/s3url', async (req, res) => {
   res.status(200).json(await generateUploadURL())

@@ -28,6 +28,21 @@ type Event {
   author:     User
 }
 
+type EventD {
+  id:         ID!
+  author_id:  ID!
+  photo:      String
+  title:      String!
+  text:       String
+  slots:      Int
+  time:       DateTime!
+  latitude:   Float
+  longitude:  Float
+  matches:    [Match]
+  author:     User
+  distance:   Int
+}
+
 type Message {
   id:         ID!
   text:       String!
@@ -64,6 +79,7 @@ type Query {
   messages(event_id: ID!):      [Message]
   matches(user_id: ID!):        [Match]
   lastEvent(author_id: ID!):    Event
+  feed(latitude: Float!, longitude: Float!, user_id: ID!, maxDistance: Int!): [EventD]
 }
 
 type Mutation {

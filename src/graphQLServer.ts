@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { createServer, pipe, filter } from '@graphql-yoga/node'
-import { sendPushNotifications } from './utils'
+import { getDistance, sendPushNotifications } from './utils'
 import { Resolvers } from '../resolvers-types'
 import { context } from '../context'
 
@@ -117,6 +117,44 @@ const resolvers: Resolvers = {
         }
       })
       return events
+    },
+    feed: async (_, { latitude, longitude, user_id, maxDistance }, { db }) => {
+      const date = new Date()
+      date.setHours(0,0,0,0)
+      const events = await db.event.findMany({
+        where: {
+          time: { gte: date },
+        },
+        orderBy: {
+          author: { rating: 'desc' }
+        },
+        include: {
+          matches: {
+            where: {
+              OR: [
+                { accepted: true, },
+                { user: { id: user_id } },
+              ],
+            },
+            include: { user: true }
+          },
+          author: true
+        }
+      })
+      const feed = events
+        // Calculate distance to events
+        .map( e => {
+          const distance = getDistance(latitude, longitude, e.latitude, e.longitude)
+          return ({...e, distance})
+        })
+        // Exclude far away, user's own, swiped and full events
+        .filter( e => (
+          e.distance <= maxDistance &&
+          (e?.author_id !== user_id) &&
+          !(e?.matches.some((m) => m.user?.id === user_id)) &&
+          e.matches.length < e.slots
+        ))
+      return feed
     }
   },
   Mutation: {
