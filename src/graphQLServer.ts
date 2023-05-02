@@ -203,42 +203,42 @@ const resolvers: Resolvers = {
       return message
     },
     postReview: async (_, { text, stars, author_id, user_id }, { db } ) => {
-
       const reviews = await db.review.findMany({
         where: {
           user_id
         }
       })
-      const prevReview = reviews.filter((r) => r.author_id === author_id)
-      const hasReviewed = prevReview.length
+      const prevReview = reviews.filter((r) => r.author_id === author_id)[0]
+      const review = await db.review.upsert({
+        where: {
+          id: prevReview.id,
+        },
+        create: {
+          text,
+          stars,
+          author_id,
+          user_id,
+        },
+        update: {
+          text,
+          stars,
+        },
+      })
 
-      if (hasReviewed) {
-        return prevReview[0]
-      } else {
-        const review = await db.review.create({
-          data: {
-            text,
-            stars,
-            author_id,
-            user_id,
-          }
-        })
-  
-        const starsArr = reviews.map((r) => r.stars)
-        const sum = starsArr.reduce((a, b) => a + b, 0)
-        const avg = Math.round(sum / starsArr.length) || 0
-        const rating = Math.round((sum / starsArr.length) / 2.5 * starsArr.length)
-        await db.user.update({
-          where: {
-            id: user_id
-          },
-          data: {
-            stars: avg,
-            rating
-          }
-        })
-        return review
-      }
+      const starsArr = reviews.map((r) => r.stars)
+      const sum = starsArr.reduce((a, b) => a + b, 0)
+      const avg = Math.round(sum / starsArr.length) || 0
+      const rating = Math.round((sum / starsArr.length) / 2.5 * starsArr.length)
+      await db.user.update({
+        where: {
+          id: user_id
+        },
+        data: {
+          stars: avg,
+          rating
+        }
+      })
+      return review
     },
     postEvent: async (_, { author_id, photo, title, text, slots, time, latitude, longitude }, { db } ) => {
       const event = await db.event.create({
