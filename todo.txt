@@ -2,8 +2,7 @@ push notifications on new event nearby ... hmhmm
 
 ui page with place selection to get notificaions on new events from ... hmmmm
 
-badge eg. international partyer (ip) on getting 5 star review abroad
+badge eg. international partyer (ip) on getting 5 star review abroad ...hmm
 
 QA:
-more photos
-map link
+more photos ...hmm

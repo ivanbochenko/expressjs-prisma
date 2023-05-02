@@ -13,7 +13,7 @@
     "migrate:deploy": "prisma migrate deploy",
     "migrate:status": "prisma migrate status",
     "generate": "prisma generate",
-    "generate-types": "graphql-codegen"
+    "types": "graphql-codegen"
   },
   "dependencies": {
     "@graphql-yoga/node": "^2.13.6",
