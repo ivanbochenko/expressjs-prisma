@@ -203,29 +203,41 @@ const resolvers: Resolvers = {
       return message
     },
     postReview: async (_, { text, stars, author_id, user_id }, { db } ) => {
+      const prevReview = (await db.review.findMany({
+        where: {
+          user_id,
+          author_id
+        }
+      }))[0]
+
+      let review
+      if (prevReview) {
+        review = await db.review.update({
+          where: {
+            id: prevReview.id,
+          },
+          data: {
+            text,
+            stars,
+          },
+        })
+      } else {
+        review = await db.review.create({
+          data: {
+            text,
+            stars,
+            author_id,
+            user_id
+          }
+        })
+      }
       const reviews = await db.review.findMany({
         where: {
           user_id
         }
       })
-      const prevReview = reviews.filter((r) => r.author_id === author_id)[0]
-      const review = await db.review.upsert({
-        where: {
-          id: prevReview.id,
-        },
-        create: {
-          text,
-          stars,
-          author_id,
-          user_id,
-        },
-        update: {
-          text,
-          stars,
-        },
-      })
 
-      const starsArr = reviews.map((r) => r.stars)
+      const starsArr = reviews.map(r => r.stars)
       const sum = starsArr.reduce((a, b) => a + b, 0)
       const avg = Math.round(sum / starsArr.length) || 0
       const rating = Math.round((sum / starsArr.length) / 2.5 * starsArr.length)
