@@ -1,6 +1,6 @@
 import express from 'express'
 import bcrypt from 'bcrypt'
-import { db } from '../dbClient'
+import { db } from './dbClient'
 import { signToken, verifyToken } from './utils'
 
 const router = express.Router()

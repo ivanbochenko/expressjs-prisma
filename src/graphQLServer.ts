@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { createServer, pipe, filter } from '@graphql-yoga/node'
 import { getDistance, sendPushNotifications } from './utils'
 import { Resolvers } from '../resolvers-types'
-import { context } from '../context'
+import { context } from './context'
 
 const resolvers: Resolvers = {
   Query: {
