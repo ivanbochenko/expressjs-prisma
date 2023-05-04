@@ -5,7 +5,6 @@ import { auth, generateUploadURL } from './utils'
 import { graphQLServer } from './graphQLServer'
 import loginRouter from './login'
 import { cwd } from 'process';
-import { db } from '../dbClient'
 
 const app = express()
 const port = process.env.PORT || 3000
@@ -14,7 +13,6 @@ app.use(cors())
 app.use(express.json())
 app.use(express.raw({ type: "application/vnd.custom-type" }))
 app.use(express.text({ type: "text/html" }))
-app.set('db', db) // Access db from routers
 
 if(process.env.NODE_ENV !== 'dev') {
   app.all('*', auth)
