@@ -4,6 +4,7 @@ import util from 'util'
 import { auth, generateUploadURL } from './utils'
 import { graphQLServer } from './graphQLServer'
 import loginRouter from './login'
+import devRouter from './dev'
 import { cwd } from 'process';
 
 const app = express()
@@ -16,7 +17,9 @@ app.use(express.text({ type: "text/html" }))
 
 if(process.env.NODE_ENV !== 'dev') {
   app.all('*', auth)
-} 
+} else {
+  app.use('/dev', devRouter)
+}
 
 app.use('/graphql', graphQLServer)
 app.use('/login', loginRouter)
