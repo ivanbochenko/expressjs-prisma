@@ -138,13 +138,3 @@ export default router;
 
 //   return data.email
 // }
-
-// router.post('/new', async (req,res) => {
-//   const { id, email } = req.body
-//   const token = jwt.sign({
-//     id,
-//     email,
-//     exp: getExpirationTime()
-//   }, secret, { algorithm: 'HS256' })
-//   res.status(200).json(token)
-// })

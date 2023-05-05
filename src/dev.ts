@@ -1,5 +1,6 @@
 import express from 'express'
 import { db } from './dbClient'
+import { signToken } from './utils'
 
 const router = express.Router()
 
@@ -25,6 +26,12 @@ router.post('/up', async (req, res) => {
   } catch (error) {
     console.log(error)
   }
+})
+
+router.post('/new', async (req,res) => {
+  const { id, email } = req.body
+  const token = signToken({ id, email })
+  res.status(200).json(token)
 })
 
 export default router;
