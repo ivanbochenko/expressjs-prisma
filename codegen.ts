@@ -9,7 +9,7 @@ const config: CodegenConfig = {
         'typescript-resolvers',
       ],
       config: {
-        contextType: './context#Context'
+        contextType: './src/context#Context'
       }
     },
   },

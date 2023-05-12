@@ -35,9 +35,9 @@ model Event {
   id          String @id @default(uuid())
   author      User @relation(fields: [author_id], references: [id], onDelete: Cascade)
   author_id   String
-  photo       String?
+  photo       String
   title       String
-  text        String?
+  text        String
   slots       Int
   time        DateTime @default(now())
   latitude    Float

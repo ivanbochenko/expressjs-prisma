@@ -10,20 +10,20 @@ type User {
   age:        Int
   stars:      Int
   sex:        String
-  reviews:    [Review]
   messages:   [Message]
+  recievedReviews:    [Review]
 }
 
 type Event {
   id:         ID!
   author_id:  ID!
-  photo:      String
+  photo:      String!
   title:      String!
-  text:       String
-  slots:      Int
+  text:       String!
+  slots:      Int!
   time:       DateTime!
-  latitude:   Float
-  longitude:  Float
+  latitude:   Float!
+  longitude:  Float!
   matches:    [Match]
   author:     User
 }
@@ -31,16 +31,16 @@ type Event {
 type EventD {
   id:         ID!
   author_id:  ID!
-  photo:      String
+  photo:      String!
   title:      String!
-  text:       String
-  slots:      Int
+  text:       String!
+  slots:      Int!
   time:       DateTime!
-  latitude:   Float
-  longitude:  Float
+  latitude:   Float!
+  longitude:  Float!
   matches:    [Match]
   author:     User
-  distance:   Int
+  distance:   Int!
 }
 
 type Message {

@@ -17,7 +17,7 @@ const resolvers: Resolvers = {
           }
         }
       })
-      return {...user!, reviews: user?.recievedReviews!}
+      return user
     },
     event: async (_, { id }, { db } ) => {
       const event = await db.event.findUnique({
@@ -34,7 +34,7 @@ const resolvers: Resolvers = {
           },
         }
       })
-      return event!
+      return event
     },
     events: async (_, { author_id }, { db } ) => {
       const events = await db.event.findMany({
