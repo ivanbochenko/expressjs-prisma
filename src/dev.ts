@@ -1,6 +1,7 @@
 import express from 'express'
+import bcrypt from 'bcrypt'
 import { db } from './dbClient'
-import { signToken } from './utils'
+import { signToken } from './utils/token'
 
 const router = express.Router()
 
@@ -29,9 +30,15 @@ router.post('/up', async (req, res) => {
 })
 
 router.post('/new', async (req,res) => {
-  const { id, email } = req.body
-  const token = signToken({ id, email })
+  const { id } = req.body
+  const token = signToken({ id })
   res.status(200).json(token)
+})
+
+router.post('/pass', async (req, res) => {
+  const password = '123'
+  const hashPassword = bcrypt.hashSync(password, 8)
+  console.log(hashPassword)
 })
 
 export default router;

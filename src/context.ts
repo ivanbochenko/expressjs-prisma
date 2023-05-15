@@ -1,15 +1,6 @@
-import { db } from './dbClient';
-import { createPubSub } from '@graphql-yoga/node'
 import { PrismaClient } from "@prisma/client";
-
-const pubSub = createPubSub()
-
+import { createPubSub } from '@graphql-yoga/node'
 export interface Context {
   db: PrismaClient;
-  pubSub: typeof pubSub;
+  pubSub: ReturnType<typeof createPubSub>;
 }
-
-export const context: Context = {
-  db,
-  pubSub,
-};

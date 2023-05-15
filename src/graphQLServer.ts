@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs'
-import { createServer, pipe, filter } from '@graphql-yoga/node'
-import { getDistance, sendPushNotifications } from './utils'
+import { createServer, pipe, filter, createPubSub } from '@graphql-yoga/node'
+import { getDistance } from './utils/distance'
+import { sendPushNotifications } from './utils/notifications'
 import { Resolvers } from '../resolvers-types'
-import { context } from './context'
+import { db } from './dbClient'
 
 const resolvers: Resolvers = {
   Query: {
@@ -355,11 +356,15 @@ const resolvers: Resolvers = {
 }
 
 const typeDefs = readFileSync('./src/schema.graphql', 'utf8')
+const pubSub = createPubSub()
 
 export const graphQLServer = createServer({
   maskedErrors: false,
   logging: true,
-  context,
+  context: {
+    db,
+    pubSub
+  },
   schema: {
     resolvers,
     typeDefs
