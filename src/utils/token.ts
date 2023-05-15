@@ -11,8 +11,7 @@ declare module 'jsonwebtoken' {
 const secret = `${process.env.JWT_SECRET}`
 
 export const verifyToken = (token: string) => {
-  const payload = <jwt.IdJwtPayload>jwt.verify(token, secret)
-  return payload
+  return <jwt.IdJwtPayload>jwt.verify(token, secret)
 }
 
 export const signToken = (data: {
