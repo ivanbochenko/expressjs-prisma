@@ -1,7 +1,6 @@
 import express from "express"
 import cors from 'cors'
 import util from 'util'
-import * as dotenv from 'dotenv';
 // import { cwd } from 'process'
 import multer, { memoryStorage } from "multer"
 import { generateUploadURL } from './utils/uploadUrl'
@@ -11,7 +10,6 @@ import loginRouter from './login'
 import devRouter from './dev'
 import { uploadToS3 } from './utils/upload'
 
-dotenv.config();
 const app = express()
 const port = process.env.PORT || 3000
 
