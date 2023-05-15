@@ -37,14 +37,13 @@ app.get('/s3url', async (req, res) => {
 app.post('/images', upload.single("image"), async (req, res) => {
   const user_id = res.locals.user.id
   const { file } = req
-  console.log(util.inspect(file, false, null, true ))
   if (!file || !user_id) return res.status(400).json({ message: "Bad request" })
 
   const key = await uploadToS3(file, user_id)
   if (!key) return res.status(500).json({ message: 'Server error' })
 
   const imgUrl = new URL(key + '.jpg', process.env.AWS_S3_LINK)
-  return res.status(201).json(imgUrl.toJSON())
+  return res.status(201).json({avatar: imgUrl.toJSON()})
 })
 
 app.post('/error', (req, res) => {
