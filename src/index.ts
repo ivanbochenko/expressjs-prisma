@@ -39,7 +39,7 @@ app.post('/images', upload.single("image"), async (req, res) => {
   const { file } = req
   if (!file || !user_id) return res.status(400).json({ message: "Bad request" })
 
-  console.log(file)
+  console.log(util.inspect(file, false, null, true ))
   const key = await uploadToS3(file, user_id)
   if (!key) return res.status(500).json({ message: 'Server error' })
 
