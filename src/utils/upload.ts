@@ -4,8 +4,8 @@ import { v4 as uuid } from "uuid";
 const s3 = new S3Client({
   region: "eu-central-1",
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    accessKeyId: `${process.env.AWS_ACCESS_KEY_ID}`,
+    secretAccessKey: `${process.env.AWS_SECRET_ACCESS_KEY}`,
   }
 })
 
