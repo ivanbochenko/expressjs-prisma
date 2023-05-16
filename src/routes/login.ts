@@ -1,32 +1,28 @@
 import express from 'express'
 import bcrypt from 'bcrypt'
-import { db } from './dbClient'
-import { signToken, verifyToken } from './utils/token'
+import { db } from '../dbClient'
+import { signToken, verifyToken } from '../utils/token'
 
 const router = express.Router()
 
 router.post('/', async (req, res) => {
-  try {
-    const { token, pushToken } = req.body
-    const payload = verifyToken(token)
+  const { token, pushToken } = req.body
+  const payload = verifyToken(token)
 
-    // Update push notifications token
-    if (payload.pushToken !== pushToken) {
-      const user = await db.user.upsert({
-        where: {id: payload.id},
-        update: {token: pushToken},
-        create: {},
-      })
-    }
-
-    // Refresh JWT
-    const newToken = signToken(payload)
-
-    // send JWT in response to the client
-    res.status(200).json({token: newToken, id: payload.id})
-  } catch (error) {
-    console.log(error)    
+  // Update push notifications token
+  if (payload.pushToken !== pushToken) {
+    const user = await db.user.upsert({
+      where: {id: payload.id},
+      update: {token: pushToken},
+      create: {},
+    })
   }
+
+  // Refresh JWT
+  const newToken = signToken(payload)
+
+  // send JWT in response to the client
+  res.status(200).json({token: newToken, id: payload.id})
 })
 
 router.post('/password', async (req, res) => {

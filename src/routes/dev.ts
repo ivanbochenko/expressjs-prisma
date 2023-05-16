@@ -1,7 +1,7 @@
 import express from 'express'
 import bcrypt from 'bcrypt'
-import { db } from './dbClient'
-import { signToken } from './utils/token'
+import { db } from '../dbClient'
+import { signToken } from '../utils/token'
 
 const router = express.Router()
 

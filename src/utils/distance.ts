@@ -1,4 +1,3 @@
-
 export function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
   const deg2rad = (deg: number) => deg * (Math.PI/180)
   const R = 6371; // Radius of the earth in km

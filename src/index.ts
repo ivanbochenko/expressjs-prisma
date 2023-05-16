@@ -1,14 +1,12 @@
 import express from "express"
 import cors from 'cors'
 import util from 'util'
-// import { cwd } from 'process'
 import multer, { memoryStorage } from "multer"
-import { generateUploadURL } from './utils/uploadUrl'
-import { auth } from './utils/auth'
 import { graphQLServer } from './graphQLServer'
-import loginRouter from './login'
-import devRouter from './dev'
+import loginRouter from './routes/login'
+import devRouter from './routes/dev'
 import { uploadToS3 } from './utils/upload'
+import { verifyToken } from "./utils/token"
 
 const app = express()
 const port = process.env.PORT || 3000
@@ -24,25 +22,34 @@ app.use(express.text({ type: "text/html" }))
 if(process.env.NODE_ENV === 'dev') {
   app.use('/dev', devRouter)
 } else {
-  app.all('*', auth)
+  app.all('*', (req, res, next) => {
+    try {
+      if (
+        req.path === '/error'  ||
+        req.path.startsWith('/login')
+      ) return next();
+      const token = req.headers['authorization']!
+      const { id, email } = verifyToken(token)
+      app.set('user_id', id)
+      app.set('email', email)
+      next()
+    } catch (error) {
+      res.status(401).json('Authorization error')
+      console.error(error)
+    }
+  })
 }
 
 app.use('/graphql', graphQLServer)
 app.use('/login', loginRouter)
 
-app.get('/s3url', async (req, res) => {
-  res.status(200).json(await generateUploadURL())
-})
-
 app.post('/images', upload.single("image"), async (req, res) => {
-  const user_id = res.locals.user.id
+  const user_id = app.get('user_id')
   const { file } = req
   if (!file || !user_id) return res.status(400).json({ message: "Bad request" })
 
   const key = await uploadToS3(file, user_id)
-  if (!key) return res.status(500).json({ message: 'Server error' })
-
-  const imgUrl = new URL(key + '.jpg', process.env.AWS_S3_LINK)
+  const imgUrl = new URL(key!, process.env.AWS_S3_LINK)
   return res.status(201).json({avatar: imgUrl.toJSON()})
 })
 
