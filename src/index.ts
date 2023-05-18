@@ -18,7 +18,7 @@ const upload = multer({ storage }).single('image')
 app.use(cors())
 app.use(express.json({type: 'application/json'}))
 app.use(express.urlencoded({ extended: true }));
-// app.use(bodyParser.raw({type: 'multipart/form-data'}));
+app.use(bodyParser.raw({type: 'multipart/form-data'}));
 app.use(express.text({ type: "text/html" }))
 
 if(process.env.NODE_ENV === 'dev') {
@@ -45,9 +45,9 @@ if(process.env.NODE_ENV === 'dev') {
 app.use('/graphql', graphQLServer)
 app.use('/login', loginRouter)
 
-app.post('/images', upload, async (req, res) => {
+app.post('/images', async (req, res) => {
   const user_id = app.get('user_id')
-  const { file } = req
+  const file = req.body
   console.log(file)
   if (!file || !user_id) return res.status(400).json({ message: "Bad request" })
 
