@@ -12,7 +12,7 @@ const app = express()
 const port = process.env.PORT || 3000
 
 const storage = memoryStorage()
-const upload = multer({ storage }).single('image')
+const upload = multer({ storage, limits: {fieldSize: 52428800} }).single('image')
 
 app.use(cors())
 app.use(express.json());
@@ -46,6 +46,7 @@ app.use('/login', loginRouter)
 app.post('/images', upload, async (req, res) => {
   const user_id = app.get('user_id')
   const { file } = req
+  console.log(req.body)
   console.log(file)
   if (!file || !user_id) return res.status(400).json({ message: "Bad request" })
 
