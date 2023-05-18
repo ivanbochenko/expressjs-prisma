@@ -1,5 +1,4 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import { Blob } from "buffer";
 import { v4 as uuid } from "uuid";
 
 const s3 = new S3Client({
@@ -10,7 +9,7 @@ const s3 = new S3Client({
   }
 })
 
-export const uploadToS3 = async (file: any, user_id: string) => {
+export const uploadToS3 = async (file: Express.Multer.File, user_id: string) => {
   const key = `${user_id}/${uuid()}`
   const date = new Date()
   date.setMonth(date.getMonth() + 2)
@@ -18,9 +17,8 @@ export const uploadToS3 = async (file: any, user_id: string) => {
     Bucket: "onlyfriends-bucket",
     Key: key,
     Expires: date,
-    Body: file,
-    // ContentType: file.mimetype,
-    ContentType: 'image/jpeg',
+    Body: file.buffer,
+    ContentType: file.mimetype,
   })
   try {
     await s3.send(command);
