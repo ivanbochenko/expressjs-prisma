@@ -46,7 +46,7 @@ app.use('/login', loginRouter)
 app.post('/images', express.raw({type: "*/*"}), async (req, res) => {
   const user_id = app.get('user_id')
   console.log(req.body)
-  const file = req.body.image
+  const file = req.body
   if (!file || !user_id) return res.status(400).json({ message: "Bad request" })
 
   const key = await uploadToS3(file, user_id)
