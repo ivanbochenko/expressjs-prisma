@@ -17,7 +17,7 @@ const upload = multer({ storage })
 
 app.use(cors())
 app.use(express.json())
-app.use(bodyParser.raw());
+app.use(bodyParser.raw({type: 'multipart/form-data'}));
 app.use(express.text({ type: "text/html" }))
 
 if(process.env.NODE_ENV === 'dev') {
