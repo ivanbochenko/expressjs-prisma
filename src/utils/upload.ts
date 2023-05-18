@@ -9,7 +9,7 @@ const s3 = new S3Client({
   }
 })
 
-export const uploadToS3 = async (file: Express.Multer.File, user_id: string) => {
+export const uploadToS3 = async (file: Buffer, user_id: string) => {
   const key = `${user_id}/${uuid()}`
   const date = new Date()
   date.setMonth(date.getMonth() + 2)
@@ -17,8 +17,8 @@ export const uploadToS3 = async (file: Express.Multer.File, user_id: string) => 
     Bucket: "onlyfriends-bucket",
     Key: key,
     Expires: date,
-    Body: file.buffer,
-    ContentType: file.mimetype,
+    Body: file,
+    ContentType: 'image/jpeg',
   })
   try {
     await s3.send(command);
