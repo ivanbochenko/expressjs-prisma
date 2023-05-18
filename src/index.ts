@@ -13,11 +13,12 @@ const app = express()
 const port = process.env.PORT || 3000
 
 const storage = memoryStorage()
-const upload = multer({ storage })
+const upload = multer({ storage }).single('image')
 
 app.use(cors())
-app.use(express.json())
-app.use(bodyParser.json({type: 'multipart/form-data'}));
+app.use(express.json({type: 'application/json'}))
+app.use(express.urlencoded({ extended: true }));
+// app.use(bodyParser.raw({type: 'multipart/form-data'}));
 app.use(express.text({ type: "text/html" }))
 
 if(process.env.NODE_ENV === 'dev') {
@@ -44,7 +45,7 @@ if(process.env.NODE_ENV === 'dev') {
 app.use('/graphql', graphQLServer)
 app.use('/login', loginRouter)
 
-app.post('/images', upload.single('image'), async (req, res) => {
+app.post('/images', upload, async (req, res) => {
   const user_id = app.get('user_id')
   const { file } = req
   if (!file || !user_id) return res.status(400).json({ message: "Bad request" })
