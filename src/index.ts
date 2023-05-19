@@ -12,7 +12,7 @@ const app = express()
 const port = process.env.PORT || 3000
 
 const storage = memoryStorage()
-const upload = multer({ storage, limits: {fieldSize: 52428800} }).single('image')
+const upload = multer({ storage }).single('file')
 
 app.use(cors())
 app.use(express.json());
