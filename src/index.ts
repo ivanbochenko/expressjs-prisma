@@ -5,7 +5,7 @@ import multer, { memoryStorage } from "multer"
 import { graphQLServer } from './graphQLServer'
 import loginRouter from './routes/login'
 import devRouter from './routes/dev'
-import { uploadToS3 } from './utils/upload'
+import { uploadToS3, uploadToS3Raw } from './utils/upload'
 import { verifyToken } from "./utils/token"
 
 const app = express()
@@ -43,14 +43,15 @@ if(process.env.NODE_ENV === 'dev') {
 app.use('/graphql', graphQLServer)
 app.use('/login', loginRouter)
 
-app.post('/images', upload, async (req, res) => {
+app.post('/images', express.raw({type: "*/*"}), async (req, res) => {
   const user_id = app.get('user_id')
-  const { file } = req
+  const buffer = req.body
+  // const { file } = req
   console.log(req.body)
-  console.log(file)
-  if (!file || !user_id) return res.status(400).json({ message: "Bad request" })
+  if (!buffer || !user_id) return res.status(400).json({ message: "Bad request" })
 
-  const key = await uploadToS3(file, user_id)
+  // const key = await uploadToS3(file, user_id)
+  const key = await uploadToS3Raw(buffer, user_id)
   const imgUrl = new URL(key!, process.env.AWS_S3_LINK)
   const image = imgUrl.toJSON()
   return res.status(201).json({ image })
