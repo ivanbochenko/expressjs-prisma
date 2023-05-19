@@ -6,23 +6,17 @@ import { signToken, verifyToken } from '../utils/token'
 const router = express.Router()
 
 router.post('/', async (req, res) => {
-  const { token, pushToken } = req.body
-  const payload = verifyToken(token)
+  const { token: oldToken, pushToken } = req.body
+  const { pushToken: oldPushToken, id } = verifyToken(oldToken)
 
-  // Update push notifications token
-  if (payload.pushToken !== pushToken) {
-    const user = await db.user.upsert({
-      where: {id: payload.id},
-      update: {token: pushToken},
-      create: {},
+  if (oldPushToken !== pushToken) {
+    const user = await db.user.update({
+      where: {id},
+      data: {token: pushToken},
     })
   }
-
-  // Refresh JWT
-  const newToken = signToken(payload)
-
-  // send JWT in response to the client
-  res.status(200).json({token: newToken, id: payload.id})
+  const token = signToken({id, pushToken})
+  res.status(200).json({token, id})
 })
 
 router.post('/password', async (req, res) => {
@@ -48,17 +42,18 @@ router.post('/password', async (req, res) => {
 router.post('/register', async (req, res) => {
   try {
     const { email, pushToken, password } = req.body
+    if (!email || !pushToken || !password) {
+      res.status(200).json({success: false, message: 'Bad request data'})
+    }
     const hashPassword = bcrypt.hashSync(password, 8)
     const userCount = await db.user.count({ where: { email } })
 
     if (userCount > 0) {
       res.status(200).json({success: false, message: 'User already exists'})
     } else {
-
       const user = await db.user.create({
         data: { email, token: pushToken, password: hashPassword },
       })
-      
       const token = signToken({
         id: user.id,
         email: user.email!,
