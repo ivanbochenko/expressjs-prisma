@@ -27,22 +27,3 @@ export const uploadToS3 = async (file: Express.Multer.File, user_id: string) => 
     console.log(error);
   }
 }
-
-export const uploadToS3Raw = async (buffer: Buffer, user_id: string) => {
-  const key = `${user_id}/${uuid()}`
-  const date = new Date()
-  date.setMonth(date.getMonth() + 2)
-  const command = new PutObjectCommand({
-    Bucket: "onlyfriends-bucket",
-    Key: key,
-    Expires: date,
-    Body: buffer,
-    ContentType: 'image/jpeg',
-  })
-  try {
-    await s3.send(command);
-    return key;
-  } catch (error) {
-    console.log(error);
-  }
-}
