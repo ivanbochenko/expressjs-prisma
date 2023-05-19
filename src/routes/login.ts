@@ -20,21 +20,26 @@ router.post('/', async (req, res) => {
 })
 
 router.post('/password', async (req, res) => {
-  const { email, password } = req.body
-  const user = await db.user.findUnique({
-    where: { email }
-  })
-
-  const isCorrectPassword = bcrypt.compareSync(password, user?.password!)
-
-  if (user && isCorrectPassword) {
-    const token = signToken({
-      id: user.id,
-      email: user.email!,
+  try {
+    const { email, password } = req.body
+    const user = await db.user.findUnique({
+      where: { email }
     })
-    res.status(200).json({token, id: user.id, success: true})
-  } else {
-    res.status(200).json({success: false})
+  
+    const isCorrectPassword = bcrypt.compareSync(password, user?.password!)
+  
+    if (user && isCorrectPassword) {
+      const token = signToken({
+        id: user.id,
+        email: user.email!,
+      })
+      res.status(200).json({token, id: user.id, success: true})
+    } else {
+      res.status(200).json({success: false})
+    }
+  } catch (error) {
+    res.status(500).json({success: false})
+    console.error(error)
   }
 })
 
@@ -69,13 +74,37 @@ router.post('/register', async (req, res) => {
 
 router.post('/reset', async (req, res) => {
   try {
-    const token = req.headers['authorization']!
-    const { id } = verifyToken(token)
-    const password = bcrypt.hashSync(req.body.password, 8)
-    const user = await db.user.update({
-      where: { id },
-      data: { password }
-    })
+    const { id } = verifyToken(req.headers['authorization']!)
+    const { password } = req.body
+    const user = await db.user.findUnique({ where: { id } })
+    if (bcrypt.compareSync(password, user?.password!)) {
+      const newPassword = bcrypt.hashSync(password, 8)
+      const updatedUser = await db.user.update({
+        where: { id },
+        data: { password: newPassword }
+      })
+    } else {
+      res.status(200).json({success: false, message: 'Wrong password'})
+      return
+    }
+    res.status(200).json({success: true})
+  } catch (error) {
+    res.status(500).json({success: false})
+    console.error(error)
+  }
+})
+
+router.post('/delete', async (req, res) => {
+  try {
+    const { id } = verifyToken(req.headers['authorization']!)
+    const { password } = req.body
+    const user = await db.user.findUnique({ where: { id } })
+    if (bcrypt.compareSync(password, user?.password!)) {
+      const deletedUser = await db.user.delete({ where: {id} })
+    } else {
+      res.status(200).json({success: false, message: 'Wrong password'})
+      return
+    }
     res.status(200).json({success: true})
   } catch (error) {
     res.status(500).json({success: false})
