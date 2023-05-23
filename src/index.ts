@@ -5,8 +5,9 @@ import multer, { memoryStorage } from "multer"
 import { graphQLServer } from './graphQLServer'
 import loginRouter from './routes/login'
 import devRouter from './routes/dev'
-import { uploadToS3 } from './utils/upload'
+import imagesRouter from './routes/images'
 import { verifyToken } from "./utils/token"
+import * as nsfw from 'nsfwjs'
 
 const app = express()
 const port = process.env.PORT || 3000
@@ -19,8 +20,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.text({ type: "text/html" }))
 
+const load_model = async () => {
+  const model = await nsfw.load()
+  app.set('model', model)
+}
+
 if(process.env.NODE_ENV === 'dev') {
-  app.use('/dev', devRouter)
+  app.use(
+    '/dev',
+    // upload,
+    devRouter
+  )
 } else {
   app.all('*', (req, res, next) => {
     try {
@@ -42,23 +52,17 @@ if(process.env.NODE_ENV === 'dev') {
 
 app.use('/graphql', graphQLServer)
 app.use('/login', loginRouter)
-
-app.post('/images', upload, async (req, res) => {
-  const user_id = app.get('user_id')
-  const { file } = req
-  if (!file || !user_id) return res.status(400).json({ message: "Bad request" })
-
-  const key = await uploadToS3(file, user_id)
-  const imgUrl = new URL(key!, process.env.AWS_S3_LINK)
-  const image = imgUrl.toJSON()
-  return res.status(201).json({ image })
-})
+app.use('/images', upload, imagesRouter)
 
 app.post('/error', (req, res) => {
   console.log('Client error: ' + util.inspect(req.body, false, null, true ))
   res.status(200).json({success: true})
 })
 
-app.listen(port, () => {
-  console.log(`App listening at http://localhost:${port}`)
-})
+load_model().then(() => 
+  app.listen(port, () => {
+    console.log(`App listening at http://localhost:${port}`)
+  })
+)
+
+

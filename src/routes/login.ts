@@ -1,7 +1,9 @@
 import express from 'express'
 import bcrypt from 'bcrypt'
+import crypto from 'crypto'
 import { db } from '../dbClient'
 import { signToken, verifyToken } from '../utils/token'
+import { sendEmail } from '../utils/mail'
 
 const router = express.Router()
 
@@ -35,7 +37,7 @@ router.post('/password', async (req, res) => {
       })
       res.status(200).json({token, id: user.id, success: true})
     } else {
-      res.status(200).json({success: false})
+      res.status(400).json({success: false})
     }
   } catch (error) {
     res.status(500).json({success: false})
@@ -43,12 +45,11 @@ router.post('/password', async (req, res) => {
   }
 })
 
-
 router.post('/register', async (req, res) => {
   try {
     const { email, pushToken, password } = req.body
     if (!email || !pushToken || !password) {
-      res.status(200).json({success: false, message: 'Bad request data'})
+      return res.status(200).json({success: false, message: 'Bad request data'})
     }
     const hashPassword = bcrypt.hashSync(password, 8)
     const userCount = await db.user.count({ where: { email } })
@@ -84,12 +85,32 @@ router.post('/reset', async (req, res) => {
         data: { password: newPassword }
       })
     } else {
-      res.status(200).json({success: false, message: 'Wrong password'})
-      return
+      return res.status(200).json({success: false, message: 'Wrong password'})
     }
     res.status(200).json({success: true})
   } catch (error) {
     res.status(500).json({success: false})
+    console.error(error)
+  }
+})
+
+router.post('/restore', async (req, res) => {
+  try {
+    const { email } = req.body
+    const hex = crypto.randomBytes(8).toString('hex')
+    const password = bcrypt.hashSync(hex, 8)
+    const updatedUser = await db.user.update({
+      where: { email },
+      data: { password }
+    })
+    if (!updatedUser) {
+      return res.status(400).json({success: false, message: 'User dont exist'})
+    }
+    const subject = 'Woogie password reset'
+    sendEmail(email, subject, {name: updatedUser?.name!, password })
+    res.status(200).json({success: true})
+  } catch (error) {
+    res.status(500).json({success: false, message: 'Bad request data'})
     console.error(error)
   }
 })
@@ -102,8 +123,7 @@ router.post('/delete', async (req, res) => {
     if (bcrypt.compareSync(password, user?.password!)) {
       const deletedUser = await db.user.delete({ where: {id} })
     } else {
-      res.status(200).json({success: false, message: 'Wrong password'})
-      return
+      return res.status(200).json({success: false, message: 'Wrong password'})
     }
     res.status(200).json({success: true})
   } catch (error) {
@@ -113,48 +133,3 @@ router.post('/delete', async (req, res) => {
 })
 
 export default router;
-
-
-// Create new user with facebook email
-
-// router.post('/facebook', async (req, res) => {
-//   try {
-//     const { code, verifier, pushToken } = req.body
-//     const email = await getFacebookEmail(code, verifier)
-//     const user = await db.user.upsert({
-//       where: { email },
-//       update: { email, token: pushToken },
-//       create: { email, token: pushToken },
-//     })
-//     const id = user.id
-//     // Create JWT
-//     const token = jwt.sign({
-//       id,
-//       email,
-//       exp: getExpirationTime()
-//     }, secret, { algorithm: 'HS256' })
-//     res.status(200).json({token, id})
-//   } catch (error) {
-//     console.error(error)
-//   }
-// })
-
-// const getFacebookEmail = async (code: string, verifier: string) => {
-//   const baseUrl = 'https://graph.facebook.com'
-//   const expoUrl = 'https://auth.expo.io/@'
-//   const link = new URL('oauth/access_token', baseUrl)
-
-//   link.searchParams.set("client_id", process.env.FACEBOOK_CLIENT_ID! )
-//   link.searchParams.set("redirect_uri", expoUrl + process.env.EXPO_SLUG )
-//   link.searchParams.set("client_secret", process.env.FACEBOOK_CLIENT_SECRET! )
-//   link.searchParams.set("grant_type", 'authorization_code' )
-//   link.searchParams.set("code_verifier", verifier )
-//   link.searchParams.set("code", code )
-
-//   const { access_token } = (await axios.get(link.toString())).data
-//   const { data } = await axios.post(
-//     `https://graph.facebook.com/v14.0/me?fields=email&access_token=${access_token}`
-//   )
-
-//   return data.email
-// }

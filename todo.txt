@@ -1,8 +1,12 @@
-push notifications on new event nearby ... hmhmm
+Focus of user attention in a single point of the day!
+  push notifications on new event nearby?
+  ui page with place selection to get notificaions on new events from?
 
-ui page with place selection to get notificaions on new events from ... hmmmm
 
-badge eg. international partyer (ip) on getting 5 star review abroad ...hmm
+Objectionable content:
+  - A method for filtering objectionable content ✔️
+  - A mechanism for users to flag objectionable content
+  - A mechanism for users to block abusive users
 
 QA:
 more photos ...hmm
