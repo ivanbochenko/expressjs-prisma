@@ -1,4 +1,5 @@
 import express from "express"
+import 'express-async-errors'
 import cors from 'cors'
 import util from 'util'
 import multer, { memoryStorage } from "multer"
@@ -16,8 +17,8 @@ const storage = memoryStorage()
 const upload = multer({ storage }).single('file')
 
 app.use(cors())
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 app.use(express.text({ type: "text/html" }))
 
 const load_model = async () => {
@@ -33,20 +34,15 @@ if(process.env.NODE_ENV === 'dev') {
   )
 } else {
   app.all('*', (req, res, next) => {
-    try {
-      if (
-        req.path === '/error'  ||
-        req.path.startsWith('/login')
-      ) return next();
-      const token = req.headers['authorization']!
-      const { id, email } = verifyToken(token)
-      app.set('user_id', id)
-      app.set('email', email)
-      next()
-    } catch (error) {
-      res.status(401).json('Authorization error')
-      console.error(error)
-    }
+    if (
+      req.path === '/error'  ||
+      req.path.startsWith('/login')
+    ) return next()
+    const token = req.headers['authorization']!
+    const { id, email } = verifyToken(token)
+    app.set('user_id', id)
+    app.set('email', email)
+    next()
   })
 }
 

@@ -288,10 +288,6 @@ const resolvers: Resolvers = {
       })
       return user
     },
-    deleteUser: async (_, { id }, { db } ) => {
-      const user = await db.user.delete({ where: { id } })
-      return user
-    },
     createMatch: async (_, { user_id, event_id, dismissed }, { db } ) => {
       const match = await db.match.create({
         data: {
