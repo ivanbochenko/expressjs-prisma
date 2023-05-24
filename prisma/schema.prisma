@@ -27,6 +27,8 @@ model User {
   events      Event[]
   matches     Match[]
   messages    Message[]
+  reports     Report[] @relation("Reports")
+  RecievedReports     Report[] @relation("RecievedReports")
   writtenReviews Review[] @relation("WrittenReviews")
   recievedReviews Review[] @relation("RecievedReviews")
 }
@@ -44,6 +46,7 @@ model Event {
   longitude   Float
   messages    Message[]
   matches     Match[]
+  reports     Report[]
 }
 
 model Message {
@@ -75,4 +78,16 @@ model Review {
   author_id   String
   user        User @relation("RecievedReviews", fields: [user_id], references: [id], onDelete: Cascade)
   user_id     String
+}
+model Report {
+  id          String @id @default(uuid())
+  time        DateTime @default(now())
+  reason      String
+  text        String
+  author      User @relation("Reports", fields: [author_id], references: [id], onDelete: Cascade)
+  author_id   String
+  user        User? @relation("RecievedReports", fields: [user_id], references: [id], onDelete: Cascade)
+  user_id     String
+  event       Event? @relation(fields: [event_id], references: [id], onDelete: Cascade)
+  event_id    String
 }
