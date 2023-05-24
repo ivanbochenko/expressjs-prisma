@@ -36,31 +36,30 @@ router.post('/password', async (req, res) => {
     })
     res.status(200).json({token, id: user.id, success: true})
   } else {
-    res.status(400).json({success: false})
+    res.status(400).json({success: false, message: 'Wrong password'})
   }
 })
 
 router.post('/register', async (req, res) => {
   const { email, pushToken, password } = req.body
   if (!email || !pushToken || !password) {
-    return res.status(200).json({success: false, message: 'Bad request data'})
+    return res.status(400).json({success: false, message: 'Bad request data'})
   }
   const hashPassword = bcrypt.hashSync(password, 8)
   const userCount = await db.user.count({ where: { email } })
 
   if (userCount > 0) {
-    res.status(200).json({success: false, message: 'User already exists'})
-  } else {
-    const user = await db.user.create({
-      data: { email, token: pushToken, password: hashPassword },
-    })
-    const token = signToken({
-      id: user.id,
-      email: user.email!,
-    })
-
-    res.status(200).json({token, id: user.id, success: true})
+    return res.status(400).json({success: false, message: 'User already exists'})
   }
+  const user = await db.user.create({
+    data: { email, token: pushToken, password: hashPassword },
+  })
+  const token = signToken({
+    id: user.id,
+    email: user.email!,
+  })
+
+  res.status(200).json({token, id: user.id, success: true})
 })
 
 router.post('/restore', async (req, res) => {
@@ -76,30 +75,6 @@ router.post('/restore', async (req, res) => {
   }
   const subject = 'Woogie password reset'
   sendEmail(email, subject, {name: updatedUser?.name!, password })
-  res.status(200).json({success: true})
-})
-
-router.post('/reset', async (req, res) => {
-  const { id, password } = req.body
-  const user = await db.user.findUnique({ where: { id } })
-  if (!bcrypt.compareSync(password, user?.password!)) {
-    return res.status(400).json({success: false, message: 'Wrong password'})
-  }
-  const newPassword = bcrypt.hashSync(password, 8)
-  const updatedUser = await db.user.update({
-    where: { id },
-    data: { password: newPassword }
-  })
-  res.status(200).json({success: true})
-})
-
-router.post('/delete', async (req, res) => {
-  const { id, password } = req.body
-  const user = await db.user.findUnique({ where: { id } })
-  if (!bcrypt.compareSync(password, user?.password!)) {
-    return res.status(400).json({success: false, message: 'Wrong password'})
-  }
-  const deletedUser = await db.user.delete({ where: {id} })
   res.status(200).json({success: true})
 })
 
