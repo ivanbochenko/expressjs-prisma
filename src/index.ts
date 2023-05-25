@@ -6,6 +6,7 @@ import multer, { memoryStorage } from "multer"
 import { graphQLServer } from './graphQLServer'
 import loginRouter from './routes/login'
 import passwordRouter from './routes/password'
+import reportRouter from './routes/report'
 import devRouter from './routes/dev'
 import imagesRouter from './routes/images'
 import { verifyToken } from "./utils/token"
@@ -41,8 +42,7 @@ if(process.env.NODE_ENV === 'dev') {
     ) return next()
     const token = req.headers['authorization']!
     const { id, email } = verifyToken(token)
-    app.set('user_id', id)
-    app.set('email', email)
+    app.set('user', { id, email })
     next()
   })
 }
@@ -50,6 +50,7 @@ if(process.env.NODE_ENV === 'dev') {
 app.use('/graphql', graphQLServer)
 app.use('/login', loginRouter)
 app.use('/password', passwordRouter)
+app.use('/report', reportRouter)
 app.use('/images', upload, imagesRouter)
 
 app.post('/error', (req, res) => {

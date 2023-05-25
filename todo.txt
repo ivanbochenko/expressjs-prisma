@@ -6,6 +6,7 @@ Focus of user attention in a single point of the day!
 Objectionable content:
   - A method for filtering objectionable content ✔️
   - A mechanism for users to flag objectionable content
+  Reports ui, route
   - A mechanism for users to block abusive users
 
 QA:
