@@ -3,8 +3,8 @@ import { db } from '../dbClient'
 
 const router = express.Router()
 
-router.all('*', async (req, res, next) => {
-})
+// router.all('*', async (req, res, next) => {
+// })
 
 router.post('/event', async (req, res) => {
   const { id } = req.app.get('user')

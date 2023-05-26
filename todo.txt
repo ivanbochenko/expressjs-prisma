@@ -1,13 +1,13 @@
 Focus of user attention in a single point of the day!
+  push notification to create event with suggested topic at peak time?
   push notifications on new event nearby?
   ui page with place selection to get notificaions on new events from?
 
 
 Objectionable content:
   - A method for filtering objectionable content ✔️
-  - A mechanism for users to flag objectionable content
-  Reports ui, route
-  - A mechanism for users to block abusive users
+  - A mechanism for users to flag objectionable content ✔️
+  - A mechanism for users to block abusive users 
 
 QA:
 more photos ...hmm
