@@ -1,10 +1,14 @@
 import nodemailer from 'nodemailer'
-import fs from 'fs'
-import path from 'path'
 import handlebars from 'handlebars'
 
 export const sendEmail = (to: string, subject: string, payload: {name: string, password: string}) => {
-  const source = fs.readFileSync(path.join(__dirname, './template.handlebars'), "utf8")
+  const source = `  
+    <p>Hi {{name}},</p>
+    <p>You requested to reset your password.</p>
+    <p>Your new password is:</p>
+    <b>{{password}}</b>
+    <p>Thank's for keeping us in touch</p>
+  `
   const compiledTemplate = handlebars.compile(source)
   const html = compiledTemplate(payload)
 

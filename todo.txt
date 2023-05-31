@@ -9,5 +9,16 @@ Objectionable content:
   - A mechanism for users to flag objectionable content ✔️
   - A mechanism for users to block abusive users 
 
+-restore & reset pass ui
+
+Feed post rating and order
+  - Author rating ✔️
+  - Distance ✔️
+  - User rating average
+  - Users amount
+
+actionsheetios
+context menu
+
 QA:
 more photos ...hmm
