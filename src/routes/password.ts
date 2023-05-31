@@ -16,8 +16,8 @@ router.all('*', async (req, res, next) => {
 
 router.post('/reset', async (req, res) => {
   const { id } = req.app.get('user')
-  const { new_password } = req.body
-  const password = bcrypt.hashSync(new_password, 8)
+  const { newPassword } = req.body
+  const password = bcrypt.hashSync(newPassword, 8)
   await db.user.update({
     where: { id },
     data: { password }
