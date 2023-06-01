@@ -122,9 +122,16 @@ const resolvers: Resolvers = {
     feed: async (_, { latitude, longitude, user_id, maxDistance }, { db }) => {
       const date = new Date()
       date.setHours(0,0,0,0)
+      const blocked = (await db.user.findUnique({
+        where: { id: user_id },
+        select: { blocked: true }
+      }))?.blocked
       const events = await db.event.findMany({
         where: {
           time: { gte: date },
+          author_id: {
+            notIn: blocked
+          }
         },
         orderBy: {
           author: { rating: 'desc' }
@@ -148,12 +155,13 @@ const resolvers: Resolvers = {
           const distance = getDistance(latitude, longitude, e.latitude, e.longitude)
           return ({...e, distance})
         })
-        // Exclude far away, user's own, swiped and full events
+        // Exclude far away, user's own, blocked, swiped and full events
         .filter( e => (
-          e.distance <= maxDistance &&
+          (e.distance <= maxDistance) &&
           (e?.author_id !== user_id) &&
-          !(e?.matches.some((m) => m.user?.id === user_id)) &&
-          e.matches.length < e.slots
+          !e?.author.blocked.includes(user_id) &&
+          (!e?.matches.some(m => m.user?.id === user_id)) &&
+          (e.matches.length < e.slots)
         ))
       return feed
     }
@@ -335,6 +343,17 @@ const resolvers: Resolvers = {
       const match = await db.match.delete({ where: {id} })
       return match
     },
+    block: async (_, { id, user_id }, { db }) => {
+      const user = await db.user.update({
+        where: { id },
+        data: {
+          blocked: {
+            push: user_id,
+          },
+        },
+      })
+      return user.blocked
+    }
   },
 
   // Use pipe to filter messages by id of event you are subscribing to

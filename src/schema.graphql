@@ -1,6 +1,5 @@
-
 type User {
-  id:         ID!
+  id:         String!
   created_at: DateTime
   email:      String
   phone:      String
@@ -15,8 +14,8 @@ type User {
 }
 
 type Event {
-  id:         ID!
-  author_id:  ID!
+  id:         String!
+  author_id:  String!
   photo:      String!
   title:      String!
   text:       String!
@@ -29,8 +28,8 @@ type Event {
 }
 
 type EventD {
-  id:         ID!
-  author_id:  ID!
+  id:         String!
+  author_id:  String!
   photo:      String!
   title:      String!
   text:       String!
@@ -44,16 +43,16 @@ type EventD {
 }
 
 type Message {
-  id:         ID!
+  id:         String!
   text:       String!
   time:       DateTime!
   author:     User!
 }
 
 type Match {
-  id:         ID!
-  user_id:    ID!
-  event_id:   ID!
+  id:         String!
+  user_id:    String!
+  event_id:   String!
   accepted:   Boolean
   dissmised:  Boolean
   event:      Event
@@ -61,7 +60,7 @@ type Match {
 }
 
 type Review {
-  id:         ID!
+  id:         String!
   text:       String!
   time:       DateTime!
   stars:      Int!
@@ -72,24 +71,24 @@ type Review {
 scalar DateTime
 
 type Query {
-  user(id: ID!):                User
-  event(id: ID!):               Event
-  events(author_id: ID!):       [Event]
-  reviews(user_id: ID!):        [Review]
-  messages(event_id: ID!):      [Message]
-  matches(user_id: ID!):        [Match]
-  lastEvent(author_id: ID!):    Event
-  feed(latitude: Float!, longitude: Float!, user_id: ID!, maxDistance: Int!): [EventD]
+  user(id: String!):                User
+  event(id: String!):               Event
+  events(author_id: String!):       [Event]
+  reviews(user_id: String!):        [Review]
+  messages(event_id: String!):      [Message]
+  matches(user_id: String!):        [Match]
+  lastEvent(author_id: String!):    Event
+  feed(latitude: Float!, longitude: Float!, user_id: String!, maxDistance: Int!): [EventD]
 }
 
 type Mutation {
 
-  postMessage(author_id: ID!, event_id: ID!, text: String!): Message!
+  postMessage(author_id: String!, event_id: String!, text: String!): Message
 
-  postReview(author_id: ID!, user_id: ID!, text: String!, stars: Int!): Review!
+  postReview(author_id: String!, user_id: String!, text: String!, stars: Int!): Review
   
   postEvent(
-    author_id: ID!,
+    author_id: String!,
     photo:     String!,
     title:     String!,
     text:      String!,
@@ -98,15 +97,16 @@ type Mutation {
     latitude:  Float!,
     longitude: Float!
   ): Event!
-  deleteEvent(id: ID!): Event!
+  deleteEvent(id: String!): Event
 
-  editUser(id: ID!, name: String!, age: Int!, sex: String!, bio: String, avatar: String): User!
+  editUser(id: String!, name: String!, age: Int!, sex: String!, bio: String, avatar: String): User
 
-  createMatch(user_id: ID!, event_id: ID!, dismissed: Boolean!): Match!
-  acceptMatch(id: ID!): Match!
-  deleteMatch(id: ID!): Match!
+  createMatch(user_id: String!, event_id: String!, dismissed: Boolean!): Match
+  acceptMatch(id: String!): Match
+  deleteMatch(id: String!): Match
+  block(id: String!, user_id: String!): [String]
 }
 
 type Subscription {
-  messages(event_id: ID!): Message!
+  messages(event_id: String!): Message!
 }

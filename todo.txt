@@ -8,8 +8,8 @@ Objectionable content:
   - A method for filtering objectionable content ✔️
   - A mechanism for users to flag objectionable content ✔️
   - A mechanism for users to block abusive users 
-
--restore & reset pass ui
+    remove matches ?
+    block in feed ?
 
 Feed post rating and order
   - Author rating ✔️

@@ -27,9 +27,10 @@ model User {
   events      Event[]
   matches     Match[]
   messages    Message[]
-  writtenReports     Report[] @relation("WrittenReports")
-  recievedReports     Report[] @relation("RecievedReports")
-  writtenReviews Review[] @relation("WrittenReviews")
+  blocked     String[]
+  writtenReports  Report[] @relation("WrittenReports")
+  recievedReports Report[] @relation("RecievedReports")
+  writtenReviews  Review[] @relation("WrittenReviews")
   recievedReviews Review[] @relation("RecievedReviews")
 }
 
