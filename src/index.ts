@@ -6,7 +6,7 @@ import multer, { memoryStorage } from "multer"
 import { graphQLServer } from './graphQLServer'
 import loginRouter from './routes/login'
 import passwordRouter from './routes/password'
-import upgradeRouter from './routes/upgrade'
+import purchaseRouter from './routes/purchase'
 import reportRouter from './routes/report'
 import devRouter from './routes/dev'
 import imagesRouter from './routes/images'
@@ -30,21 +30,23 @@ const load_model = async () => {
 }
 
 if(process.env.NODE_ENV === 'dev') {
-  app.use(
-    '/dev',
-    // upload,
-    devRouter
-  )
+  app.use('/dev', devRouter)
 } else {
   app.all('*', (req, res, next) => {
-    if (
-      req.path === '/error'  ||
-      req.path.startsWith('/login')
-    ) return next()
-    const token = req.headers['authorization']!
-    const { id, email } = verifyToken(token)
-    app.set('user', { id, email })
-    next()
+    try {
+      if (
+        req.path === '/'
+        || req.path === '/error'
+        || req.path.startsWith('/login')
+        || req.path.startsWith('/purchase')
+      ) return next()
+      const token = req.headers['authorization']!
+      const { id, email } = verifyToken(token)
+      app.set('user', { id, email })
+      next()
+    } catch (error) {
+      res.status(401).json({message: 'Authorization error'})
+    }
   })
 }
 
@@ -52,10 +54,10 @@ app.use('/graphql', graphQLServer)
 app.use('/login', loginRouter)
 app.use('/password', passwordRouter)
 app.use('/report', reportRouter)
-app.use('/upgrade', upgradeRouter)
+app.use('/purchase', purchaseRouter)
 app.use('/images', upload, imagesRouter)
 
-app.post('/', (req, res) => {
+app.get('/', (req, res) => {
   res.status(200).json({message: 'Hello from Woogie!'})
 })
 
