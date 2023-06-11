@@ -7,7 +7,7 @@ Focus of user attention in a single point of the day!
 Objectionable content:
   - A method for filtering objectionable content ✔️
   - A mechanism for users to flag objectionable content ✔️
-  - A mechanism for users to block abusive users 
+  - A mechanism for users to block abusive users ✔️
 
 Feed post rating and order
   - Author rating ✔️

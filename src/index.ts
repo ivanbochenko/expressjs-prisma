@@ -6,6 +6,7 @@ import multer, { memoryStorage } from "multer"
 import { graphQLServer } from './graphQLServer'
 import loginRouter from './routes/login'
 import passwordRouter from './routes/password'
+import upgradeRouter from './routes/upgrade'
 import reportRouter from './routes/report'
 import devRouter from './routes/dev'
 import imagesRouter from './routes/images'
@@ -51,7 +52,12 @@ app.use('/graphql', graphQLServer)
 app.use('/login', loginRouter)
 app.use('/password', passwordRouter)
 app.use('/report', reportRouter)
+app.use('/upgrade', upgradeRouter)
 app.use('/images', upload, imagesRouter)
+
+app.post('/', (req, res) => {
+  res.status(200).json({message: 'Hello from Woogie!'})
+})
 
 app.post('/error', (req, res) => {
   console.log('Client error: ' + util.inspect(req.body, false, null, true ))
