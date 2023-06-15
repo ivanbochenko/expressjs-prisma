@@ -3,7 +3,7 @@ import { createServer, pipe, filter, createPubSub } from '@graphql-yoga/node'
 import { getDistance } from './utils/distance'
 import { sendPushNotifications } from './utils/notifications'
 import { Resolvers } from '../resolvers-types'
-import { db } from './dbClient'
+import { db } from './utils/dbClient'
 
 const resolvers: Resolvers = {
   Query: {
@@ -95,13 +95,11 @@ const resolvers: Resolvers = {
       return reviews
     },
     lastEvent: async (_, { author_id }, { db } ) => {
-      const time = new Date()
-      time.setHours(0,0,0,0)
       const events = await db.event.findFirst({
         where: {
           author_id,
           time: {
-            gt: time
+            gt: new Date(new Date().setHours(0,0,0,0))
           }
         },
         include: {

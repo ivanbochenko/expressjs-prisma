@@ -1,6 +1,6 @@
 import express from 'express'
 import bcrypt from 'bcrypt'
-import { db } from '../dbClient'
+import { db } from '../utils/dbClient'
 import { signToken } from '../utils/token'
 import { sendEmail } from '../utils/mail'
 import { convert, isSafe } from '../utils/NSFW'

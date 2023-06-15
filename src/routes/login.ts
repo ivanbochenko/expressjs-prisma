@@ -1,23 +1,16 @@
 import express from 'express'
 import bcrypt from 'bcrypt'
 import crypto from 'crypto'
-import { db } from '../dbClient'
+import { db } from '../utils/dbClient'
 import { signToken, verifyToken } from '../utils/token'
 import { sendEmail } from '../utils/mail'
 
 const router = express.Router()
 
 router.post('/', async (req, res) => {
-  const { token: oldToken, pushToken } = req.body
-  const { pushToken: oldPushToken, id } = verifyToken(oldToken)
-
-  if (oldPushToken !== pushToken) {
-    const user = await db.user.update({
-      where: {id},
-      data: {token: pushToken},
-    })
-  }
-  const token = signToken({id, pushToken})
+  const oldToken = req.body.token
+  const { id } = verifyToken(oldToken)
+  const token = signToken({id})
   res.status(200).json({token, id})
 })
 
@@ -40,25 +33,31 @@ router.post('/password', async (req, res) => {
   }
 })
 
+// const user = await db.user.update({
+//   where: {id},
+//   data: {token: pushToken},
+// })
+
 router.post('/register', async (req, res) => {
-  const { email, pushToken, password } = req.body
-  if (!email || !pushToken || !password) {
+  const { email, password, pushToken } = req.body
+  if (!email || !password) {
     return res.status(400).json({success: false, message: 'Bad request data'})
   }
-  const hashPassword = bcrypt.hashSync(password, 8)
   const userCount = await db.user.count({ where: { email } })
-
   if (userCount > 0) {
     return res.status(400).json({success: false, message: 'User already exists'})
   }
   const user = await db.user.create({
-    data: { email, token: pushToken, password: hashPassword },
+    data: {
+      email,
+      token: pushToken ?? '',
+      password: bcrypt.hashSync(password, 8)
+    },
   })
   const token = signToken({
     id: user.id,
     email: user.email!,
   })
-
   res.status(200).json({token, id: user.id, success: true})
 })
 
