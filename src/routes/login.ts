@@ -15,22 +15,20 @@ router.post('/', async (req, res) => {
 })
 
 router.post('/password', async (req, res) => {
-  const { email, password } = req.body
-  const user = await db.user.findUnique({
-    where: { email }
+  const { email, password, pushToken } = req.body
+  const user = await db.user.update({
+    where: { email },
+    data: { token: pushToken ?? '' }
   })
-
   const isCorrectPassword = bcrypt.compareSync(password, user?.password!)
-
-  if (user && isCorrectPassword) {
-    const token = signToken({
-      id: user.id,
-      email: user.email!,
-    })
-    res.status(200).json({token, id: user.id, success: true})
-  } else {
-    res.status(400).json({success: false, message: 'Wrong password'})
+  if (!user || !isCorrectPassword) {
+    return res.status(400).json({success: false, message: 'Wrong password'})
   }
+  const token = signToken({
+    id: user.id,
+    email: user.email!,
+  })
+  res.status(200).json({token, id: user.id, success: true})
 })
 
 // const user = await db.user.update({
