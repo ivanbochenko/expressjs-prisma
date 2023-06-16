@@ -22,7 +22,7 @@ router.post('/password', async (req, res) => {
   })
   const isCorrectPassword = bcrypt.compareSync(password, user?.password!)
   if (!user || !isCorrectPassword) {
-    return res.status(400).json({success: false, message: 'Wrong password'})
+    return res.status(400).send('Wrong password')
   }
   const token = signToken({
     id: user.id,
@@ -39,11 +39,11 @@ router.post('/password', async (req, res) => {
 router.post('/register', async (req, res) => {
   const { email, password, pushToken } = req.body
   if (!email || !password) {
-    return res.status(400).json({success: false, message: 'Bad request data'})
+    return res.status(400).send('Bad request data')
   }
   const userCount = await db.user.count({ where: { email } })
   if (userCount > 0) {
-    return res.status(400).json({success: false, message: 'User already exists'})
+    return res.status(400).send('User already exists')
   }
   const user = await db.user.create({
     data: {
@@ -68,7 +68,7 @@ router.post('/restore', async (req, res) => {
     data: { password }
   })
   if (!updatedUser) {
-    return res.status(400).json({success: false, message: 'User does not exist'})
+    return res.status(400).send('User does not exist')
   }
   const subject = 'Woogie password reset'
   sendEmail(email, subject, {name: updatedUser?.name!, password })

@@ -10,8 +10,8 @@ router.all('*', async (req, res, next) => {
   const user = await db.user.findUnique({ where: { id } })
   req.app.set('user', user)
   const isCorrectPassword = bcrypt.compareSync(password, user?.password!)
-  if (isCorrectPassword) return next()
-  return res.status(400).json({success: false, message: 'Wrong password'})
+  if (!isCorrectPassword) return res.status(400).send('Wrong password')
+  next()
 })
 
 router.post('/reset', async (req, res) => {
