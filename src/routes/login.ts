@@ -22,7 +22,7 @@ router.post('/password', async (req, res) => {
   })
   const isCorrectPassword = bcrypt.compareSync(password, user?.password!)
   if (!user || !isCorrectPassword) {
-    return res.status(400).send('Wrong password')
+    return res.status(400).send(!user ? 'No such user' : 'Wrong password')
   }
   const token = signToken({
     id: user.id,
@@ -54,7 +54,7 @@ router.post('/register', async (req, res) => {
   })
   const token = signToken({
     id: user.id,
-    email: user.email!,
+    email: email,
   })
   res.status(200).json({token, id: user.id, success: true})
 })
