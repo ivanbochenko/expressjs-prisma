@@ -5,6 +5,9 @@ import { sendPushNotifications } from './utils/notifications'
 import { Resolvers } from '../resolvers-types'
 import { db } from './utils/dbClient'
 
+const HOURS_EVENT_LAST = 24
+const bridge = () => new Date(new Date().getTime() - 3600000 * HOURS_EVENT_LAST)
+
 const resolvers: Resolvers = {
   Query: {
     user: async (_, { id }, { db } ) => {
@@ -98,9 +101,7 @@ const resolvers: Resolvers = {
       const events = await db.event.findFirst({
         where: {
           author_id,
-          time: {
-            gt: new Date(new Date().setHours(0,0,0,0))
-          }
+          time: { gt: bridge() }
         },
         include: {
           author: true,
@@ -118,15 +119,13 @@ const resolvers: Resolvers = {
       return events
     },
     feed: async (_, { latitude, longitude, user_id, maxDistance }, { db }) => {
-      const date = new Date()
-      date.setHours(0,0,0,0)
       const blocked = (await db.user.findUnique({
         where: { id: user_id },
         select: { blocked: true }
       }))?.blocked
       const events = await db.event.findMany({
         where: {
-          time: { gte: date },
+          time: { gte: bridge() },
           author_id: {
             notIn: blocked
           }
