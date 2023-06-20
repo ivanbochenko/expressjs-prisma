@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { createServer, pipe, filter, createPubSub } from '@graphql-yoga/node'
-import { getDistance } from './utils/distance'
+import { getDistance, dateShiftHours } from './utils/calc'
 import { sendPushNotifications } from './utils/notifications'
 import { Resolvers } from '../resolvers-types'
 import { db } from './utils/dbClient'
@@ -259,6 +259,7 @@ const resolvers: Resolvers = {
       return review
     },
     postEvent: async (_, { author_id, photo, title, text, slots, time, latitude, longitude }, { db } ) => {
+      const shiftedTime = time >= dateShiftHours(new Date(), -0.5) ? time : dateShiftHours(time, 24)
       const event = await db.event.create({
         data: {
           author_id,
@@ -266,7 +267,7 @@ const resolvers: Resolvers = {
           title,
           text,
           slots,
-          time,
+          time: shiftedTime,
           latitude,
           longitude,
         }

@@ -56,17 +56,17 @@ router.post('/register', async (req, res) => {
 
 router.post('/restore', async (req, res) => {
   const { email } = req.body
-  const hex = crypto.randomBytes(8).toString('hex')
-  const password = bcrypt.hashSync(hex, 8)
+  const password = crypto.randomBytes(8).toString('hex')
+  const hash = bcrypt.hashSync(password, 8)
   const updatedUser = await db.user.update({
     where: { email },
-    data: { password }
+    data: { password: hash }
   })
   if (!updatedUser) {
     return res.status(400).send('User does not exist')
   }
   const subject = 'Woogie password reset'
-  sendEmail(email, subject, {name: updatedUser?.name!, password: hex })
+  sendEmail(email, subject, {name: updatedUser?.name!, password })
   res.status(200).json({success: true})
 })
 
