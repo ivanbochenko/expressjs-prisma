@@ -23,5 +23,5 @@ const find = (predictions: [predictionType], name: string) => {
 }
 
 export const isSafe = (predictions: [predictionType]) => {
-  return find(predictions, "Porn") < 0.08 && find(predictions, 'Neutral') > 0.6
+  return find(predictions, "Porn") < 0.08 && find(predictions, 'Neutral') > 0.5
 }

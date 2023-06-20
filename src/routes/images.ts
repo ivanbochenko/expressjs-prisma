@@ -7,7 +7,7 @@ const router = express.Router()
 router.post('/', async (req, res) => {
   const { id } = req.app.get('user')
   const { file } = req
-  if (!file || !id) return res.status(400).json({ message: "Bad request" })
+  if (!file || !id) return res.status(400).send("Bad request")
   const model = req.app.get('model')
   const suspect = convert(file?.buffer!)
   const predictions = await model.classify(suspect)
@@ -19,7 +19,8 @@ router.post('/', async (req, res) => {
     const image = imgUrl.toJSON()
     return res.status(201).json({ image })
   } else {
-    return res.status(400).json({ message: "Inappropriate image" })
+    console.log(predictions)
+    return res.status(400).send("Inappropriate image")
   }
 })
 
