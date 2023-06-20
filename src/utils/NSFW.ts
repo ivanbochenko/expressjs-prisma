@@ -17,11 +17,13 @@ export const convert = (img: Buffer) => {
   return tf.tensor3d(values, [image.height, image.width, numChannels], 'int32')
 }
 
-const find = (predictions: [predictionType], name: string) => {
-  const probability = predictions.find(({ className }: predictionType) => className === name)!.probability
-  return probability
-}
+const minNeutral = 0.3
+const maxPorn = 0.08
+
+const find = (predictions: [predictionType], name: string) => (
+  predictions.find(({ className }: predictionType) => className === name)!.probability
+)
 
 export const isSafe = (predictions: [predictionType]) => {
-  return find(predictions, "Porn") < 0.1 && find(predictions, 'Neutral') > 0.5
+  return find(predictions, "Porn") < maxPorn && find(predictions, 'Neutral') > minNeutral
 }

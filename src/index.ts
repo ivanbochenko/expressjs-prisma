@@ -11,6 +11,7 @@ import imagesRouter from './routes/images'
 import devRouter from './routes/dev'
 import { verifyToken } from "./utils/token"
 import * as nsfw from 'nsfwjs'
+import { convert, isSafe } from "./utils/NSFW"
 
 const app = express()
 const port = process.env.PORT || 3000
@@ -30,6 +31,16 @@ const load_model = async () => {
 
 if(process.env.NODE_ENV === 'dev') {
   app.use('/dev', devRouter)
+  app.post('/photo', upload, async (req, res) => {
+    const { file } = req
+    const model = req.app.get('model')
+    const suspect = convert(file?.buffer!)
+    const predictions = await model.classify(suspect)
+    const safe = isSafe(predictions)
+    suspect.dispose()
+    
+    res.status(200).json({ safe, predictions })
+  })
 } else {
   app.all('*', (req, res, next) => {
     try {
