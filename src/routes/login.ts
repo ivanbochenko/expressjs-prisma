@@ -31,11 +31,6 @@ router.post('/password', async (req, res) => {
   res.status(200).json({token, id: user.id, success: true})
 })
 
-// const user = await db.user.update({
-//   where: {id},
-//   data: {token: pushToken},
-// })
-
 router.post('/register', async (req, res) => {
   const { email, password, pushToken } = req.body
   if (!email || !password) {
@@ -71,7 +66,7 @@ router.post('/restore', async (req, res) => {
     return res.status(400).send('User does not exist')
   }
   const subject = 'Woogie password reset'
-  sendEmail(email, subject, {name: updatedUser?.name!, password })
+  sendEmail(email, subject, {name: updatedUser?.name!, password: hex })
   res.status(200).json({success: true})
 })
 
