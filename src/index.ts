@@ -3,7 +3,7 @@ import 'express-async-errors'
 import cors from 'cors'
 import util from 'util'
 import multer, { memoryStorage } from "multer"
-import { graphQLServer } from './graphQLServer'
+import { yoga } from './graphQLServer'
 import loginRouter from './routes/login'
 import passwordRouter from './routes/password'
 import reportRouter from './routes/report'
@@ -59,7 +59,7 @@ if(process.env.NODE_ENV === 'dev') {
   })
 }
 
-app.use('/graphql', graphQLServer)
+app.use(yoga.graphqlEndpoint, yoga)
 app.use('/login', loginRouter)
 app.use('/password', passwordRouter)
 app.use('/report', reportRouter)

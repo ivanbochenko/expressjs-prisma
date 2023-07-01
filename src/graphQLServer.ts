@@ -1,16 +1,15 @@
 import { readFileSync } from 'node:fs'
-import { createServer, pipe, filter, createPubSub } from '@graphql-yoga/node'
+import { createSchema, createYoga, createPubSub, pipe, filter } from 'graphql-yoga'
 import { getDistance, dateShiftHours } from './utils/calc'
 import { sendPushNotifications } from './utils/notifications'
 import { Resolvers } from '../resolvers-types'
 import { db } from './utils/dbClient'
 
-const HOURS_EVENT_LAST = 24
-const bridge = () => new Date(new Date().getTime() - 3600000 * HOURS_EVENT_LAST)
+const pubSub = createPubSub()
 
 const resolvers: Resolvers = {
   Query: {
-    user: async (_, { id }, { db } ) => {
+    user: async (_, { id } ) => {
       const user = await db.user.findUnique({
         where: { id },
         include: {
@@ -23,7 +22,7 @@ const resolvers: Resolvers = {
       })
       return user
     },
-    event: async (_, { id }, { db } ) => {
+    event: async (_, { id } ) => {
       const event = await db.event.findUnique({
         where: { id },
         include: {
@@ -40,7 +39,7 @@ const resolvers: Resolvers = {
       })
       return event
     },
-    events: async (_, { author_id }, { db } ) => {
+    events: async (_, { author_id } ) => {
       const events = await db.event.findMany({
         where: { author_id },
         include: {
@@ -57,7 +56,7 @@ const resolvers: Resolvers = {
       })
       return events
     },
-    matches: async (_, { user_id }, { db } ) => {
+    matches: async (_, { user_id } ) => {
       const event = await db.match.findMany({
         where: {
           user_id,
@@ -69,7 +68,7 @@ const resolvers: Resolvers = {
       })
       return event
     },
-    messages: async (_, { event_id }, { db } ) => {
+    messages: async (_, { event_id } ) => {
       const messages = await db.message.findMany({
         where: {
           event_id
@@ -83,7 +82,7 @@ const resolvers: Resolvers = {
       })
       return messages
     },
-    reviews: async (_, { user_id }, { db } ) => {
+    reviews: async (_, { user_id } ) => {
       const reviews = await db.review.findMany({
         where: {
           user_id
@@ -97,11 +96,11 @@ const resolvers: Resolvers = {
       })
       return reviews
     },
-    lastEvent: async (_, { author_id }, { db } ) => {
+    lastEvent: async (_, { author_id } ) => {
       const events = await db.event.findFirst({
         where: {
           author_id,
-          time: { gt: bridge() }
+          time: { gt: dateShiftHours(new Date(), -24) }
         },
         include: {
           author: true,
@@ -118,14 +117,14 @@ const resolvers: Resolvers = {
       })
       return events
     },
-    feed: async (_, { latitude, longitude, user_id, maxDistance }, { db }) => {
+    feed: async (_, { latitude, longitude, user_id, maxDistance }) => {
       const blocked = (await db.user.findUnique({
         where: { id: user_id },
         select: { blocked: true }
       }))?.blocked
       const events = await db.event.findMany({
         where: {
-          time: { gte: bridge() },
+          time: { gte: dateShiftHours(new Date(), -24) },
           author_id: {
             notIn: blocked
           }
@@ -164,7 +163,7 @@ const resolvers: Resolvers = {
     }
   },
   Mutation: {
-    postMessage: async (_, { text, author_id, event_id }, { pubSub, db } ) => {
+    postMessage: async (_, { text, author_id, event_id } ) => {
       const message = await db.message.create({
         data: {
           text,
@@ -208,7 +207,7 @@ const resolvers: Resolvers = {
       }
       return message
     },
-    postReview: async (_, { text, stars, author_id, user_id }, { db } ) => {
+    postReview: async (_, { text, stars, author_id, user_id } ) => {
       const prevReview = (await db.review.findMany({
         where: {
           user_id,
@@ -258,7 +257,7 @@ const resolvers: Resolvers = {
       })
       return review
     },
-    postEvent: async (_, { author_id, photo, title, text, slots, time, latitude, longitude }, { db } ) => {
+    postEvent: async (_, { author_id, photo, title, text, slots, time, latitude, longitude } ) => {
       const shiftedTime = time >= dateShiftHours(new Date(), -0.5) ? time : dateShiftHours(time, 24)
       const event = await db.event.create({
         data: {
@@ -275,11 +274,11 @@ const resolvers: Resolvers = {
       // Notify nearby users
       return event
     },
-    deleteEvent: async (_, { id }, { db } ) => {
+    deleteEvent: async (_, { id } ) => {
       const event = await db.event.delete({ where: { id } })
       return event
     },
-    editUser: async (_, { id, name, age, sex, bio, avatar }, { db } ) => {
+    editUser: async (_, { id, name, age, sex, bio, avatar } ) => {
       const user = await db.user.update({
         where: {
           id
@@ -294,7 +293,7 @@ const resolvers: Resolvers = {
       })
       return user
     },
-    createMatch: async (_, { user_id, event_id, dismissed }, { db } ) => {
+    createMatch: async (_, { user_id, event_id, dismissed } ) => {
       const match = await db.match.create({
         data: {
           user_id,
@@ -320,7 +319,7 @@ const resolvers: Resolvers = {
       }
       return match
     },
-    acceptMatch: async (_, { id }, { db } ) => {
+    acceptMatch: async (_, { id } ) => {
       const match = await db.match.update({
         where: { id },
         data: { accepted: true },
@@ -337,11 +336,11 @@ const resolvers: Resolvers = {
       })
       return match
     },
-    deleteMatch: async (_, { id }, { db } ) => {
+    deleteMatch: async (_, { id } ) => {
       const match = await db.match.delete({ where: {id} })
       return match
     },
-    block: async (_, { id, user_id }, { db }) => {
+    block: async (_, { id, user_id }) => {
       const user = await db.user.update({
         where: { id },
         data: {
@@ -358,10 +357,10 @@ const resolvers: Resolvers = {
 
   Subscription: {
     messages: {
-      subscribe: async (_, { event_id }, { pubSub } ) =>
+      subscribe: async (_, { event_id } ) =>
         pipe(
           pubSub.subscribe('newMessages'),
-          filter((payload) => payload.event_id == event_id)
+          filter( (payload: any) => payload.event_id === event_id)
         ),
       resolve: (value: any) => value
     },
@@ -369,17 +368,10 @@ const resolvers: Resolvers = {
 }
 
 const typeDefs = readFileSync('./src/schema.graphql', 'utf8')
-const pubSub = createPubSub()
 
-export const graphQLServer = createServer({
-  maskedErrors: false,
-  logging: true,
-  context: {
-    db,
-    pubSub
-  },
-  schema: {
-    resolvers,
-    typeDefs
-  },
+const schema = createSchema({
+  typeDefs,
+  resolvers
 })
+
+export const yoga = createYoga({ schema })
