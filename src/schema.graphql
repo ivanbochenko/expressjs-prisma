@@ -1,3 +1,6 @@
+
+scalar DateTime
+
 type User {
   id:         String!
   created_at: DateTime
@@ -67,8 +70,6 @@ type Review {
   author:     User
   user:       User
 }
-
-scalar DateTime
 
 type Query {
   user(id: String!):                User

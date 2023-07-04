@@ -258,7 +258,7 @@ const resolvers: Resolvers = {
       return review
     },
     postEvent: async (_, { author_id, photo, title, text, slots, time, latitude, longitude } ) => {
-      const shiftedTime = time >= dateShiftHours(new Date(), -0.5) ? time : dateShiftHours(time, 24)
+      // const shiftedTime = time >= dateShiftHours(new Date(), -0.5) ? time : dateShiftHours(time, 24)
       const event = await db.event.create({
         data: {
           author_id,
@@ -266,7 +266,7 @@ const resolvers: Resolvers = {
           title,
           text,
           slots,
-          time: shiftedTime,
+          time,
           latitude,
           longitude,
         }
