@@ -258,7 +258,6 @@ const resolvers: Resolvers = {
       return review
     },
     postEvent: async (_, { author_id, photo, title, text, slots, time, latitude, longitude } ) => {
-      // const shiftedTime = time >= dateShiftHours(new Date(), -0.5) ? time : dateShiftHours(time, 24)
       const event = await db.event.create({
         data: {
           author_id,
@@ -274,10 +273,7 @@ const resolvers: Resolvers = {
       // Notify nearby users
       return event
     },
-    deleteEvent: async (_, { id } ) => {
-      const event = await db.event.delete({ where: { id } })
-      return event
-    },
+    deleteEvent: async (_, { id } ) => await db.event.delete({ where: { id } }),
     editUser: async (_, { id, name, age, sex, bio, avatar } ) => {
       const user = await db.user.update({
         where: {
@@ -336,10 +332,7 @@ const resolvers: Resolvers = {
       })
       return match
     },
-    deleteMatch: async (_, { id } ) => {
-      const match = await db.match.delete({ where: {id} })
-      return match
-    },
+    deleteMatch: async (_, { id } ) => await db.match.delete({ where: {id} }),
     block: async (_, { id, user_id }) => {
       const user = await db.user.update({
         where: { id },
