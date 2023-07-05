@@ -1,11 +1,13 @@
 import { readFileSync } from 'node:fs'
-import { createSchema, createYoga, createPubSub, pipe, filter } from 'graphql-yoga'
+import { createSchema, createYoga, createPubSub } from 'graphql-yoga'
 import { getDistance, dateShiftHours } from './utils/calc'
 import { sendPushNotifications } from './utils/notifications'
 import { Resolvers } from '../resolvers-types'
 import { db } from './utils/dbClient'
 
-const pubSub = createPubSub()
+const pubSub = createPubSub<{
+  newMessages: [event_id: string, payload: any]
+}>()
 
 const resolvers: Resolvers = {
   Query: {
@@ -174,7 +176,7 @@ const resolvers: Resolvers = {
           author: true
         }
       })
-      pubSub.publish('newMessages', message)
+      pubSub.publish('newMessages', event_id, message)
       const matches = await db.match.findMany({
         where: {
           event_id
@@ -350,12 +352,8 @@ const resolvers: Resolvers = {
 
   Subscription: {
     messages: {
-      subscribe: async (_, { event_id } ) =>
-        pipe(
-          pubSub.subscribe('newMessages'),
-          filter( (payload: any) => payload.event_id === event_id)
-        ),
-      resolve: (value: any) => value
+      subscribe: async (_, { event_id } ) => pubSub.subscribe('newMessages', event_id),
+      resolve: (payload: any) => payload
     },
   },
 }
