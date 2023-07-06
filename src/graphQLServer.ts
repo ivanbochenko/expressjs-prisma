@@ -4,7 +4,6 @@ import { getDistance, dateShiftHours } from './utils/calc'
 import { sendPushNotifications } from './utils/notifications'
 import { Resolvers } from '../resolvers-types'
 import { db } from './utils/dbClient'
-import { useGraphQLSSE } from '@graphql-yoga/plugin-graphql-sse'
 
 const pubSub = createPubSub<{
   newMessages: [event_id: string, payload: any]
@@ -361,4 +360,4 @@ const typeDefs = readFileSync('./src/schema.graphql', 'utf8')
 
 export const schema = createSchema({ typeDefs, resolvers })
 
-export const yoga = createYoga({ schema, plugins: [useGraphQLSSE()] })
+export const yoga = createYoga({ schema })
