@@ -358,6 +358,6 @@ const resolvers: Resolvers = {
 
 const typeDefs = readFileSync('./src/schema.graphql', 'utf8')
 
-const schema = createSchema({ typeDefs, resolvers })
+export const schema = createSchema({ typeDefs, resolvers })
 
 export const yoga = createYoga({ schema })

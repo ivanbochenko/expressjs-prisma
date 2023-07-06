@@ -3733,6 +3733,11 @@ graphql-request@^6.0.0:
     "@graphql-typed-document-node/core" "^3.2.0"
     cross-fetch "^3.1.5"
 
+graphql-sse@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/graphql-sse/-/graphql-sse-2.2.0.tgz#69f0557352143a25e0065b5a892b88050a086211"
+  integrity sha512-ULXpwlgcQpen/dhYNTcoKkDyVUoYvhUocnd58TjbQZYm6zP7bzKADg4abZFPkkVOU4IaC0rAD1DnIcE+Gtvmsg==
+
 graphql-tag@^2.11.0:
   version "2.12.6"
   resolved "https://registry.yarnpkg.com/graphql-tag/-/graphql-tag-2.12.6.tgz#d441a569c1d2537ef10ca3d1633b48725329b5f1"
