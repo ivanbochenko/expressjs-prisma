@@ -3,7 +3,7 @@ import 'express-async-errors'
 import cors from 'cors'
 import util from 'util'
 import multer, { memoryStorage } from "multer"
-import { schema, yoga } from './graphQLServer'
+import { yoga } from './graphQLServer'
 import loginRouter from './routes/login'
 import passwordRouter from './routes/password'
 import reportRouter from './routes/report'
@@ -12,7 +12,6 @@ import devRouter from './routes/dev'
 import { verifyToken } from "./utils/token"
 import * as nsfw from 'nsfwjs'
 import { convert, isSafe } from "./utils/NSFW"
-import { createHandler } from 'graphql-sse/lib/use/express';
 
 const app = express()
 const port = process.env.PORT || 3000
@@ -29,17 +28,6 @@ const load_model = async () => {
   const model = await nsfw.load()
   app.set('model', model)
 }
-
-const handler = createHandler({ schema });
- 
-app.use('/graphql/stream', async (req, res) => {
-  try {
-    await handler(req, res);
-  } catch (err) {
-    console.error(err);
-    res.writeHead(500).end();
-  }
-});
 
 if(process.env.NODE_ENV === 'dev') {
   app.use('/dev', devRouter)
